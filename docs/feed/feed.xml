@@ -1,0 +1,889 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+	<title>Fares&#39; Blog</title>
+	<subtitle>TODO: Insert Subtitle.</subtitle>
+	
+	<link href="https://serafdev.github.io/feed/feed.xml" rel="self"/>
+	<link href="https://serafdev.github.io"/>
+	<updated>2020-05-30T00:00:00-04:00</updated>
+	<id>https://serafdev.github.io</id>
+	<author>
+		<name>Fares B.</name>
+		<email></email>
+	</author>
+	
+	<entry>
+		<title>Django Filtering</title>
+		<link href="https://serafdev.github.io/posts/2019-02-17-Django-filtering-with-query-parameters/"/>
+		<updated>2019-02-17T00:00:00-05:00</updated>
+		<id>https://serafdev.github.io/posts/2019-02-17-Django-filtering-with-query-parameters/</id>
+		<content type="html">
+		  &lt;!-- layout: post --&gt;
+&lt;!-- title: Django filtering with query parameters --&gt;
+&lt;!-- date: 2019-02-17 07:24 --&gt;
+&lt;!-- summary: A way to add a generic optional filtering to Django /GET request, e.g /GET /items?name__startswith=Graph --&gt;
+&lt;!-- categories: webdev python django --&gt;
+&lt;!-- layout: layouts/post.njk --&gt;
+&lt;!-- tags: --&gt;
+&lt;!--   - django  --&gt;
+&lt;!--   - api --&gt;
+&lt;h4 id=&quot;problem&quot;&gt;Problem &lt;a class=&quot;direct-link&quot; href=&quot;#problem&quot;&gt;#&lt;/a&gt;&lt;/h4&gt;
+&lt;p&gt;If you make a webapp, you will need someday or another to give filtering options to your frontend coworkers. In Django it is pretty simple to add filtering to a &lt;code&gt;query_set: e.g (Item.objects.filter(name=&#39;Graphic Card&#39;))&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Although, I found optional filtering was annoying, I could&#39;ve used the &lt;code&gt;Item.objects.filter(name__startswith=&#39;&#39;)&lt;/code&gt; when there&#39;s no filter given but this is not nice because if you have 10 different filters you will still need to handle integers and pass all the filters even the empty ones to your query.&lt;/p&gt;
+&lt;h4 id=&quot;solution&quot;&gt;Solution &lt;a class=&quot;direct-link&quot; href=&quot;#solution&quot;&gt;#&lt;/a&gt;&lt;/h4&gt;
+&lt;p&gt;Let&#39;s handle the use case of a &lt;code&gt;/GET /items?name__startswith=Grap&amp;amp;price_gte=300&amp;amp;price__lte=700&lt;/code&gt; which should return all items that start with &lt;code&gt;Grap&lt;/code&gt; and price range from &lt;code&gt;300&lt;/code&gt; and &lt;code&gt;700&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;So your request will trigger the viewset &lt;code&gt;ItemViewSet&lt;/code&gt; which contains the default function &lt;code&gt;list&lt;/code&gt; which returns the the elements in &lt;code&gt;self.get_queryset()&lt;/code&gt; which the default is all elements (At least for me when I generated the sample ViewSet)&lt;/p&gt;
+&lt;p&gt;Here&#39;s what I found:&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;ListModelMixin&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token builtin&quot;&gt;object&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;    &lt;span class=&quot;token triple-quoted-string string&quot;&gt;&quot;&quot;&quot;&lt;br&gt;    List a queryset.&lt;br&gt;    &quot;&quot;&quot;&lt;/span&gt;&lt;br&gt;    &lt;span class=&quot;token keyword&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;list&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;self&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; request&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;*&lt;/span&gt;args&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;**&lt;/span&gt;kwargs&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;        queryset &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; self&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;filter_queryset&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;self&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;get_queryset&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;br&gt;        serializer &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; self&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;get_serializer&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;queryset&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; many&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token boolean&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token keyword&quot;&gt;return&lt;/span&gt; Response&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;serializer&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;data&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;To modify the behaviour we need to override the &lt;code&gt;get_queryset()&lt;/code&gt;, I am not sure if we should override the &lt;code&gt;def list()&lt;/code&gt; function but it looked to me that if I did that, the &lt;code&gt;get_queryset()&lt;/code&gt; will return everything and then we filter in the backend, which I don&#39;t want.&lt;/p&gt;
+&lt;p&gt;Now back to our sheeps, to make our URL work we can make a function that will dynamically generate our query parameters like this:&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; django&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;db&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;models &lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; Q&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token comment&quot;&gt;# `/GET /items?name__startswith=Grap&amp;amp;price_gte=300&amp;amp;price__lte=700`&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;token keyword&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;get_queryset&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;self&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;&lt;br&gt;    filters &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&lt;br&gt;                &lt;span class=&quot;token string&quot;&gt;&#39;name__startswith&#39;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; self&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;request&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;GET&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;get&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&#39;name__startswith &#39;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&#39;&#39;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;&lt;br&gt;                &lt;span class=&quot;token string&quot;&gt;&#39;price__gte&#39;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; self&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;request&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;GET&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;get&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&#39;price_gte &#39;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&#39;&#39;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;&lt;br&gt;                &lt;span class=&quot;token string&quot;&gt;&#39;price__lte&#39;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; self&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;request&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;GET&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;get&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&#39;price__lte&#39;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&#39;&#39;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;&lt;br&gt;              &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;br&gt;&lt;br&gt;    &lt;span class=&quot;token keyword&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;queries&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;filters&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;Q&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;k&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; v&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;for&lt;/span&gt; k&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; v &lt;span class=&quot;token keyword&quot;&gt;in&lt;/span&gt; filters&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;items&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;if&lt;/span&gt; v&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;br&gt;&lt;br&gt;    &lt;span class=&quot;token keyword&quot;&gt;return&lt;/span&gt; Item&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;objects&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token builtin&quot;&gt;filter&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;*&lt;/span&gt;queries&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;filters&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;First, we fetch the 3 query sets and put them in a dictionary with the keys &lt;code&gt;name__startswith&lt;/code&gt;, &lt;code&gt;price_gte&lt;/code&gt;, &lt;code&gt;price__lte&lt;/code&gt;, if they are not there we give the default value &#39;&#39; (which means False).&lt;/p&gt;
+&lt;p&gt;Second, our queries function will generate an array of Queries &lt;code&gt;Q&lt;/code&gt; of column name &lt;code&gt;k&lt;/code&gt; (the key of the dictionary &lt;code&gt;filters.items()&lt;/code&gt;) and the filter condition &lt;code&gt;v&lt;/code&gt; (the value of &lt;code&gt;filters.items()&lt;/code&gt;), but only &lt;code&gt;if v&lt;/code&gt; (translates to &lt;code&gt;if True&lt;/code&gt;, remember &lt;code&gt;&#39;&#39;&lt;/code&gt; means False). The function Q takes as arguments named variables, of the form &lt;code&gt;Q(name__startswith=&#39;Gra&#39;)&lt;/code&gt; (named arguments) and this is why I used a dictionary with unpacking, a bit like **kwargs: you can see some doc about that &lt;a href=&quot;http://book.pythontips.com/en/latest/args_and_kwargs.html&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Third we pass the filters we generated earlier to the function we just created, which will return an array of Queries, but our &lt;code&gt;Item.objects.filter&lt;/code&gt; takes multiple queries as arguments and not an array of queries, so again we need to unpack the unnamed variables like this: &lt;code&gt;*queries(filters)&lt;/code&gt;, this will look like this after unpacking: &lt;code&gt;Item.objects.filter(Q1, Q2, Q3)&lt;/code&gt; where &lt;code&gt;Q1=Q(name__startswith=&#39;Gra&#39;), Q2=Q(price_gte=300), Q3=Q(price__lte=700)&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Finally, you can add more complex filtering like &lt;code&gt;category__in=[1,2,3]&lt;/code&gt; (where 1 2 and 3 are category ids). To do this you just need to parse your array in the filters level like this:&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&lt;br&gt;    &lt;span class=&quot;token string&quot;&gt;&#39;category__in&#39;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;token builtin&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;c&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;for&lt;/span&gt; c &lt;span class=&quot;token keyword&quot;&gt;in&lt;/span&gt; self&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;request&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;GET&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;get&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&#39;category__in&#39;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&#39;&#39;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;split&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&#39;,&#39;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;if&lt;/span&gt; c&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This will split your query parameter &lt;code&gt;category__in=1,2,3&lt;/code&gt; into an array &lt;code&gt;[1,2,3]&lt;/code&gt;, again if the array is empty, the &lt;code&gt;queries(filters)&lt;/code&gt; function will evaluate &lt;code&gt;[]&lt;/code&gt; to &lt;code&gt;False&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Happy Pythoning!&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;PS: If you find an issue or a way to improve this article, please open an issue &lt;a href=&quot;https://github.com/serafss2/serafss2.github.io/issues&quot;&gt;here&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Note1: Try these &#39;Falsy&#39; variables&lt;/em&gt;&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;not&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&#39;List is empty&#39;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;token keyword&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;not&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&#39;&#39;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&#39;String is empty&#39;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;em&gt;Note2: You could also take all query parameters and directly build your dictionary, something like:&lt;/em&gt;&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;Q&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;k&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; v&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;for&lt;/span&gt; k&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; v &lt;span class=&quot;token keyword&quot;&gt;in&lt;/span&gt; self&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;request&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;GET&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;em&gt;You could also make a function that would translate &lt;code&gt;__in&lt;/code&gt; to splitting the value, etc. I didn&#39;t try something like this yet but if I find the need I would update this article, if you do it, feel free to contribute&lt;/em&gt;&lt;/p&gt;
+
+			
+		</content>
+	</entry>
+	
+	<entry>
+		<title>Things I wish(ed) I could add to Python</title>
+		<link href="https://serafdev.github.io/posts/2019-03-09-Things-I-wish-I-could-add-to-python/"/>
+		<updated>2019-03-09T00:00:00-05:00</updated>
+		<id>https://serafdev.github.io/posts/2019-03-09-Things-I-wish-I-could-add-to-python/</id>
+		<content type="html">
+		  &lt;h3 id=&quot;things-i-wish-i-could-add-to-python&quot;&gt;Things I wish I could add to Python &lt;a class=&quot;direct-link&quot; href=&quot;#things-i-wish-i-could-add-to-python&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;For some background, I&#39;ve been a Scala developer for 2 years and if there&#39;s something I wish I could port in other languages are the berserk mode collections.&lt;/p&gt;
+&lt;p&gt;For example if you get some data from an external source and have to do some modification, even complex and long, you could do it in one line elegantly and it will still be very readable, for e.g, if we receive some mapping between unimportant strings with some integer list as values, and we only want to get all the unique integers in a list and then only collect what is even, we could do something like this:&lt;/p&gt;
+&lt;pre class=&quot;language-scala&quot;&gt;&lt;code class=&quot;language-scala&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;val&lt;/span&gt; someData&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; Map&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;token builtin&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; List&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;token builtin&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; Map&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;yes&quot;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;-&gt;&lt;/span&gt; List&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;no&quot;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;-&gt;&lt;/span&gt; List&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;br&gt;someData&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;flatMap&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;_&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;_2&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;toList&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;distinct&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;filter&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;_ &lt;span class=&quot;token operator&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;2&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; List&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This looks pretty nice and concise, and very easy to read. Every function speaks from itself, first we do a flatMap (So a map that will flatten one level of the collection, e.g: &lt;code&gt;[[1, 2, 3], [3, 4, 5]] =&amp;gt; [1, 2, 3, 3, 4, 5]&lt;/code&gt;). Then distinct, takes distinct values and finally a filter which verifies if each element is an even number.&lt;/p&gt;
+&lt;p&gt;Now, we absolutely can do this in python, also in a one liner like this:&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;some_data &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;yes&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;no&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;x &lt;span class=&quot;token keyword&quot;&gt;for&lt;/span&gt; x &lt;span class=&quot;token keyword&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;token builtin&quot;&gt;set&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;y &lt;span class=&quot;token keyword&quot;&gt;for&lt;/span&gt; v &lt;span class=&quot;token keyword&quot;&gt;in&lt;/span&gt; some_data&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;values&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;for&lt;/span&gt; y &lt;span class=&quot;token keyword&quot;&gt;in&lt;/span&gt; v &lt;span class=&quot;token keyword&quot;&gt;if&lt;/span&gt; y &lt;span class=&quot;token operator&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;2&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This does almost the same thing, but is not as easy to read. First we flatten the values of the dictionary with &lt;code&gt;[y for v in some_data.values() for y in v]&lt;/code&gt;. Then we can use &lt;code&gt;set&lt;/code&gt; to discard duplicates (A set in python is just a hashset, so the &lt;code&gt;&amp;quot;keys&amp;quot;&lt;/code&gt; must be unique). Then we can just add a simple filter in the first part to check if the numbers we are adding are even: &lt;code&gt;if y % 2 == 0&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;On a side note, it took me time to understand how flattening works in python, these one liners are pretty satisfying but I try to avoid them in production because I don&#39;t want whoever debugging to come hunt me while I&#39;m sleeping.&lt;/p&gt;
+&lt;h5 id=&quot;added-functions-to-list&quot;&gt;Added functions to list &lt;a class=&quot;direct-link&quot; href=&quot;#added-functions-to-list&quot;&gt;#&lt;/a&gt;&lt;/h5&gt;
+&lt;p&gt;So my point is, even if I find python a pretty complete language, I still though these cool collection functions could improve readability. So I just wanted to try to extend the &lt;code&gt;list&lt;/code&gt; class to add a few functional functions:&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;from&lt;/span&gt; functools &lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;token builtin&quot;&gt;reduce&lt;/span&gt;&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token keyword&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;list_&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token builtin&quot;&gt;list&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;&lt;br&gt;    &lt;span class=&quot;token keyword&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;map&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;self&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; func&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token keyword&quot;&gt;return&lt;/span&gt; list_&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token builtin&quot;&gt;map&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;func&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; self&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;br&gt;&lt;br&gt;    &lt;span class=&quot;token keyword&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;filter&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;self&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; func&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token keyword&quot;&gt;return&lt;/span&gt; list_&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token builtin&quot;&gt;filter&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;func&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; self&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;br&gt;&lt;br&gt;    &lt;span class=&quot;token keyword&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;flat_map&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;self&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; func&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token keyword&quot;&gt;return&lt;/span&gt; list_&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token builtin&quot;&gt;map&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;func&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;x &lt;span class=&quot;token keyword&quot;&gt;for&lt;/span&gt; y &lt;span class=&quot;token keyword&quot;&gt;in&lt;/span&gt; self &lt;span class=&quot;token keyword&quot;&gt;for&lt;/span&gt; x &lt;span class=&quot;token keyword&quot;&gt;in&lt;/span&gt; y&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;br&gt;&lt;br&gt;    &lt;span class=&quot;token keyword&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;flatten&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;self&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token keyword&quot;&gt;return&lt;/span&gt; self&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;flat_map&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token keyword&quot;&gt;lambda&lt;/span&gt; x&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; x&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;br&gt;&lt;br&gt;    &lt;span class=&quot;token keyword&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;reduce&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;self&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; func&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token keyword&quot;&gt;return&lt;/span&gt; list_&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token builtin&quot;&gt;reduce&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;func&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; self&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;br&gt;&lt;br&gt;    &lt;span class=&quot;token keyword&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;distinct&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;self&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token keyword&quot;&gt;return&lt;/span&gt; list_&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token builtin&quot;&gt;set&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;self&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now we have some cool built-in functions to our new type &lt;code&gt;list_&lt;/code&gt;, we can also chain them since each of them returns a new instance of the type &lt;code&gt;list_&lt;/code&gt; which respects the functional paradigm and makes it easier to read and debug.&lt;/p&gt;
+&lt;p&gt;Let&#39;s try to do some complex chain:&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;list_&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;6&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;flat_map&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token keyword&quot;&gt;lambda&lt;/span&gt; x&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; x &lt;span class=&quot;token operator&quot;&gt;**&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token builtin&quot;&gt;filter&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token keyword&quot;&gt;lambda&lt;/span&gt; x&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; x &lt;span class=&quot;token operator&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;2&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;distinct&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;16&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;36&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This is definitely easier to read, we know that we have a nested list and we flatten it while &amp;quot;squaring&amp;quot; each value, then taking only even numbers but only keeping distinct ones.&lt;/p&gt;
+&lt;p&gt;If we go to the first example we would have:&lt;/p&gt;
+&lt;pre class=&quot;language-python&quot;&gt;&lt;code class=&quot;language-python&quot;&gt;some_data &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;yes&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;no&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;br&gt;list_&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;some_data&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;values&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;flatten&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;distinct&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token builtin&quot;&gt;filter&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token keyword&quot;&gt;lambda&lt;/span&gt; x&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; x &lt;span class=&quot;token operator&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;2&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Which reads to: take values, flatten them, take distincts and filter them.&lt;/p&gt;
+&lt;p&gt;I did all these examples by extending &lt;code&gt;list&lt;/code&gt; but I tried this with &lt;code&gt;tuple&lt;/code&gt; and it also works. I guess any collection could inherit from these functions with minor changes, I think it would be great to see these in a future Python release.&lt;/p&gt;
+&lt;p&gt;Hope you liked this read, if you have any suggestions or ways to improve this article, do not hesitate opening an &lt;a href=&quot;https://github.com/serafss2/serafss2.github.io/issues&quot;&gt;issue&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Happy Pythoning!&lt;/p&gt;
+&lt;p&gt;P.S: I wanted to play with the &lt;code&gt;CPython&lt;/code&gt; compiler but couldn&#39;t find how to add functions to the &lt;code&gt;iterables&lt;/code&gt; class. I wish to open a PEP suggestion after playing a little bit with the compiler and testing performance, if you have any experience about this I would love to talk with you and get some of your advice.&lt;/p&gt;
+
+			
+		</content>
+	</entry>
+	
+	<entry>
+		<title>Deploy an nginx server</title>
+		<link href="https://serafdev.github.io/posts/2019-03-11-Deploy-an-nginx-server/"/>
+		<updated>2019-03-11T00:00:00-04:00</updated>
+		<id>https://serafdev.github.io/posts/2019-03-11-Deploy-an-nginx-server/</id>
+		<content type="html">
+		  &lt;h3 id=&quot;deploy-an-nginx-server&quot;&gt;Deploy an nginx server &lt;a class=&quot;direct-link&quot; href=&quot;#deploy-an-nginx-server&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;I&#39;ll show you in this guide how to deploy an nginx server with detailed explanation on what&#39;s happening. This guide is for unix environments, I will do it on an ubuntu machine but it should be almost the same on any machine if you understand what&#39;s going on.&lt;/p&gt;
+&lt;h4 id=&quot;install-nginx&quot;&gt;Install nginx &lt;a class=&quot;direct-link&quot; href=&quot;#install-nginx&quot;&gt;#&lt;/a&gt;&lt;/h4&gt;
+&lt;p&gt;First you will need to install nginx,&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token function&quot;&gt;sudo&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;apt&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;install&lt;/span&gt; nginx&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;verify-installation&quot;&gt;Verify installation &lt;a class=&quot;direct-link&quot; href=&quot;#verify-installation&quot;&gt;#&lt;/a&gt;&lt;/h4&gt;
+&lt;p&gt;First multiple things might happened depending on your platform, to verify the installation we first need to check the nginx file and look how it is behaving on your machine, so go check your &lt;code&gt;nginx.conf&lt;/code&gt; file:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token function&quot;&gt;cat&lt;/span&gt; /etc/nginx/nginx.conf&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;You should find under the http tag either a &lt;code&gt;server&lt;/code&gt; tag or one ore multiple includes which will take care to include servers from other files. For example in my case I found these 2 lines but no &lt;code&gt;server&lt;/code&gt; tag (might be different for you):&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;include /etc/nginx/conf.d/*.conf&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;br&gt;include /etc/nginx/sites-enabled/*&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If you found a &lt;code&gt;server&lt;/code&gt; tag, then good you can check the port it&#39;s listening to with the listen parameter:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;    listen &lt;span class=&quot;token number&quot;&gt;80&lt;/span&gt; default_server&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If not, we can look inside the folders included (&lt;code&gt;/etc/nginx/conf.d/&lt;/code&gt; and &lt;code&gt;/etc/nginx/sites-enabled/&lt;/code&gt;). I found mine in &lt;code&gt;/etc/nginx/sites-enabled/default&lt;/code&gt; (which is a simlink but I won&#39;t cover that in this tutorial because it used to confuse me at first and I want to keep this simple.)&lt;/p&gt;
+&lt;p&gt;So I look inside it&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token function&quot;&gt;cat&lt;/span&gt; /etc/nginx/sites-enabled/default&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;..&lt;/span&gt;.&lt;br&gt;    listen &lt;span class=&quot;token number&quot;&gt;80&lt;/span&gt; default_server&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;..&lt;/span&gt;.&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now to verify if everything worked correctly you can run your nginx application which will load the default files for you:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;/etc/init.d/nginx start&lt;br&gt;&lt;br&gt;or&lt;br&gt;&lt;br&gt;systemctl start nginx&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Go to your browser and type &lt;code&gt;localhost:80&lt;/code&gt;, (or the default port for you) you should find that &amp;quot;Welcome to nginx!&amp;quot; page. If you&#39;re on a server you can do &lt;code&gt;curl http://localhost:80&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Okay, now we know nginx is working, whatever breaks after should be in our configuration file and not in our installation.&lt;/p&gt;
+&lt;h4 id=&quot;let&#39;s-make-our-own-simple-configuration-from-scratch-(for-a-static-web-site)&quot;&gt;Let&#39;s make our own simple configuration from scratch (for a static web site) &lt;a class=&quot;direct-link&quot; href=&quot;#let&#39;s-make-our-own-simple-configuration-from-scratch-(for-a-static-web-site)&quot;&gt;#&lt;/a&gt;&lt;/h4&gt;
+&lt;p&gt;First, let&#39;s make a simple page that does nothing, create a file named &lt;code&gt;index.html&lt;/code&gt; inside &lt;code&gt;/var/www/html/my_website/&lt;/code&gt;, you can copy paste these 2 lines:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token function&quot;&gt;sudo&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;mkdir&lt;/span&gt; /var/www/html/my_website&lt;br&gt;&lt;span class=&quot;token function&quot;&gt;sudo&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;touch&lt;/span&gt; /var/www/html/my_website/index.html&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Add some content to the file you just created, you can use whatever editor you like to open it and put this content in it (You can write an actual html file but I&#39;ll just write one line):&lt;/p&gt;
+&lt;p&gt;To open the file run this command (replace emacs with whatever editor you like, e,g: nano, gedit, vim):&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;emacs /var/www/html/my_website/index.html&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;language-html&quot;&gt;&lt;code class=&quot;language-html&quot;&gt;What&#39;s up doge;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Second, make sure you got this line in your &lt;code&gt;/etc/nginx/nginx.conf&lt;/code&gt;:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;	include /etc/nginx/conf.d/*.conf&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;It indicates to nginx to include every configuration file that finishes with &lt;code&gt;.conf&lt;/code&gt; inside the folder &lt;code&gt;conf.d/&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Now let&#39;s clean our default configurations in there by removing the default server we found earlier (either directly inside &lt;code&gt;nginx.conf&lt;/code&gt; or a standalone file inside &lt;code&gt;conf.d/&lt;/code&gt; or &lt;code&gt;sites-enabled/&lt;/code&gt;), in the case of standalone files you can delete the file or move it to your home directory if you want to play with it later, otherwise you can comment out the whole &lt;code&gt;server { ... }&lt;/code&gt; bloc (by adding a &lt;code&gt;#&lt;/code&gt; in the beginning)&lt;/p&gt;
+&lt;p&gt;Let&#39;s restart nginx with &lt;code&gt;systemctl restart nginx&lt;/code&gt; or &lt;code&gt;/etc/init.d/nginx restart&lt;/code&gt;, clean cache and head to &lt;code&gt;localhost:80&lt;/code&gt; (or the port you found earlier). It shouldn&#39;t show the nginx welcome page anymore.&lt;/p&gt;
+&lt;p&gt;Now let&#39;s create our new configuration file for the fully functional website we just created:&lt;/p&gt;
+&lt;p&gt;Create a new nginx configuration file inside &lt;code&gt;/etc/nginx/conf.d/&lt;/code&gt;&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token function&quot;&gt;sudo&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;touch&lt;/span&gt; /etc/nginx/conf.d/my_website.conf&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Let&#39;s add this content to it by opening the file (&lt;code&gt;sudo emacs /etc/nginx/conf.d/my_website.conf&lt;/code&gt;) and copy pasting the next snippet:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;server &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&lt;br&gt;    listen &lt;span class=&quot;token number&quot;&gt;8081&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;br&gt;    server_name localhost&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;br&gt;&lt;br&gt;    root /var/www/html/my_website&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;br&gt;    index index.html&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;br&gt;&lt;br&gt;    location / &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&lt;br&gt;        try_files &lt;span class=&quot;token variable&quot;&gt;$uri&lt;/span&gt; &lt;span class=&quot;token variable&quot;&gt;$uri&lt;/span&gt;/ &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;404&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;br&gt;    &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now if you head to your browser at the url &lt;code&gt;localhost:8081&lt;/code&gt;, you can see &lt;code&gt;What&#39;s up&lt;/code&gt; on the page.&lt;/p&gt;
+&lt;p&gt;Congratulation, you just deployed a website behind an nginx layer.&lt;/p&gt;
+&lt;h4 id=&quot;nginx-as-a-reverse-proxy&quot;&gt;Nginx as a reverse proxy &lt;a class=&quot;direct-link&quot; href=&quot;#nginx-as-a-reverse-proxy&quot;&gt;#&lt;/a&gt;&lt;/h4&gt;
+&lt;p&gt;For the ones that want to use nginx as a reverse proxy, the base configuration is simpler:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;server &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&lt;br&gt;    listen &lt;span class=&quot;token number&quot;&gt;80&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;br&gt;    server_name localhost&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;br&gt;&lt;br&gt;    location / &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&lt;br&gt;        proxy_pass http://localhost:8080&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;br&gt;    &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This will pass all requests from the client on http to your server listening to port &lt;code&gt;8080&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;If you want to add &lt;code&gt;https&lt;/code&gt; with a redirect from &lt;code&gt;http&lt;/code&gt; to &lt;code&gt;https&lt;/code&gt;, this applies if you can :&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;server &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&lt;br&gt;    listen &lt;span class=&quot;token number&quot;&gt;443&lt;/span&gt; ssl&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;br&gt;    server_name _&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;br&gt;    ssl_certificate /etc/nginx/conf.d/ssl/ssl.crt&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;br&gt;    ssl_certificate_key /etc/nginx/conf.d/ssl/ssl.key&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;br&gt;&lt;br&gt;    location / &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&lt;br&gt;        proxy_pass http://localhost:8080&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;br&gt;    &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;br&gt;&lt;br&gt;server &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&lt;br&gt;    listen &lt;span class=&quot;token number&quot;&gt;80&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;br&gt;    listen &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;::&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;:80&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;br&gt;    server_name _&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;br&gt;    &lt;span class=&quot;token builtin class-name&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;301&lt;/span&gt; https://&lt;span class=&quot;token variable&quot;&gt;$host&lt;/span&gt;&lt;span class=&quot;token variable&quot;&gt;$request_uri&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;NOTE: Replacing &lt;code&gt;server_name _;&lt;/code&gt; with &lt;code&gt;server_name your_domain.com;&lt;/code&gt; (a.k.a &lt;code&gt;server_name faresbessrour.com;&lt;/code&gt; in my case) is not a bad idea. You can host many servers on the same machine.&lt;/p&gt;
+&lt;p&gt;Okay, thanx for reading! Hope this helped you.&lt;/p&gt;
+&lt;p&gt;If you have any comments, some step was ambiguous or any suggestions to fix or make this post better, please open an &lt;a href=&quot;https://github.com/serafss2/serafss2.github.io/issues&quot;&gt;issue&lt;/a&gt;, I will be glad to hear from you!&lt;/p&gt;
+
+			
+		</content>
+	</entry>
+	
+	<entry>
+		<title>Generate a CSR/Key pair with openssl (linux)</title>
+		<link href="https://serafdev.github.io/posts/2019-05-01-Generate-a-csr-key-pair-with-openssl/"/>
+		<updated>2019-05-01T00:00:00-04:00</updated>
+		<id>https://serafdev.github.io/posts/2019-05-01-Generate-a-csr-key-pair-with-openssl/</id>
+		<content type="html">
+		  &lt;h4 id=&quot;command&quot;&gt;Command &lt;a class=&quot;direct-link&quot; href=&quot;#command&quot;&gt;#&lt;/a&gt;&lt;/h4&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;openssl req -new -newkey rsa:2048 -nodes -keyout faresbessrour.com.key -out faresbessrour.com.csr&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;That will create a key &lt;code&gt;faresbessrour.com.key&lt;/code&gt; and a csr &lt;code&gt;faresbessrour.com.csr&lt;/code&gt;, make sure you backup the key somewhere secure and you can use the CSR to get a certificate from a CA, then you can throw it. The CRT part that you will get is the public part so it is not as important.&lt;/p&gt;
+&lt;h4 id=&quot;footnote&quot;&gt;Footnote &lt;a class=&quot;direct-link&quot; href=&quot;#footnote&quot;&gt;#&lt;/a&gt;&lt;/h4&gt;
+&lt;p&gt;The most important part is the CN, it should be your url or your machine name, the rest is just whatever I think, but it&#39;s still good to put the correct information if you will deploy to production, else for local testing you can skip those questions, but I&#39;m not sure&lt;/p&gt;
+
+			
+		</content>
+	</entry>
+	
+	<entry>
+		<title>Gunicorn WSGI Dockerfile (Python webserver)</title>
+		<link href="https://serafdev.github.io/posts/2019-10-05-Gunicorn-WSGI-Dockerfile/"/>
+		<updated>2019-10-05T00:00:00-04:00</updated>
+		<id>https://serafdev.github.io/posts/2019-10-05-Gunicorn-WSGI-Dockerfile/</id>
+		<content type="html">
+		  &lt;h3 id=&quot;write-the-dockerfile&quot;&gt;Write the Dockerfile &lt;a class=&quot;direct-link&quot; href=&quot;#write-the-dockerfile&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;First, I really love using alpine linux for all my docker images, when testing my containers,&lt;br&gt;
+they most of the time only take a few megabytes of space. For the version, I have nothing special running linux related so always&lt;br&gt;
+keeping latest is allright (by not specifying any version for the alpine part). For Python, we&#39;re currently at 3.7.4, by putting 3.7&lt;br&gt;
+you ensure your docker image to always have those minor updates (latest of 3.7).&lt;/p&gt;
+&lt;p&gt;In my app, I needed some libraries that required compiling and cryptography libraries, so I added gcc,&lt;br&gt;
+libc-dev, libressl-dev and libffi-dev.&lt;/p&gt;
+&lt;p&gt;For the rest it&#39;s just the normal python commands to install packages using pip.&lt;/p&gt;
+&lt;pre class=&quot;language-dockerfile&quot;&gt;&lt;code class=&quot;language-dockerfile&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;FROM&lt;/span&gt; python&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;3.7&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;alpine&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token keyword&quot;&gt;RUN&lt;/span&gt; apk add gcc libc&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;dev libffi&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;dev libressl&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;dev&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token keyword&quot;&gt;WORKDIR&lt;/span&gt; /app&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token keyword&quot;&gt;COPY&lt;/span&gt; requirements.txt /app/requirements.txt&lt;br&gt;&lt;span class=&quot;token keyword&quot;&gt;RUN&lt;/span&gt; pip install &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;r requirements.txt&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token keyword&quot;&gt;COPY&lt;/span&gt; . /app&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token keyword&quot;&gt;EXPOSE&lt;/span&gt; 8000&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token keyword&quot;&gt;CMD&lt;/span&gt; gunicorn &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;b 0.0.0.0&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;8000 app.wsgi&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&quot;build-the-docker-image&quot;&gt;Build the docker image &lt;a class=&quot;direct-link&quot; href=&quot;#build-the-docker-image&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;To build the docker image you can simply run the build command in the right directory:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;docker build &lt;span class=&quot;token builtin class-name&quot;&gt;.&lt;/span&gt; -t your-django-app&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&quot;run-the-app&quot;&gt;Run the app &lt;a class=&quot;direct-link&quot; href=&quot;#run-the-app&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;Since we exposed our gunicorn app on port 8000, we need to publish (-p) our container port to one of the host ports,&lt;br&gt;
+here I&#39;ll be chosing 8000 for simplicity, so in daemon mode (-d):&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;docker run -d -p &lt;span class=&quot;token number&quot;&gt;8000&lt;/span&gt;:8000 your-django-app&lt;/code&gt;&lt;/pre&gt;
+
+			
+		</content>
+	</entry>
+	
+	<entry>
+		<title>Kubernetes configuration with a backend + frontend setup</title>
+		<link href="https://serafdev.github.io/posts/2019-10-13-Kubernetes-configuration-with-backend-and-frontend/"/>
+		<updated>2019-10-13T00:00:00-04:00</updated>
+		<id>https://serafdev.github.io/posts/2019-10-13-Kubernetes-configuration-with-backend-and-frontend/</id>
+		<content type="html">
+		  &lt;h4 id=&quot;the-app&quot;&gt;The app &lt;a class=&quot;direct-link&quot; href=&quot;#the-app&quot;&gt;#&lt;/a&gt;&lt;/h4&gt;
+&lt;p&gt;First, the setup of my application is pretty small and simple: I have a backend that connects to a traditional database and a static frontend that sends requests to the backend endpoints. The database has it&#39;s own cloud-managed cluster and will not be part of the Kubernetes deployments, although, the machines are in the same private network since you should never expose a database publicly.&lt;/p&gt;
+&lt;h3 id=&quot;the-registry&quot;&gt;The registry &lt;a class=&quot;direct-link&quot; href=&quot;#the-registry&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;For my design, I have for now a standalone machine that I called &lt;code&gt;ops&lt;/code&gt; for operations and it contains my docker registry where I push my images. I also have my jenkins on the same machine.&lt;/p&gt;
+&lt;p&gt;Both run on docker, for registry you simply need to do:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;docker pull registry&lt;br&gt;docker run -d -p &lt;span class=&quot;token number&quot;&gt;5000&lt;/span&gt;:5000 --restart always --name registry registry:2&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This will pull the official registry image from the docker hub, then we will run it in daemon mode on port 5000.&lt;/p&gt;
+&lt;p&gt;You now have a registry running!&lt;/p&gt;
+&lt;p&gt;Now let&#39;s put the images on it. Let&#39;s do it manually for now.&lt;/p&gt;
+&lt;p&gt;First, I pulled my &lt;code&gt;backend&lt;/code&gt; and &lt;code&gt;frontend&lt;/code&gt; code to the &lt;code&gt;ops&lt;/code&gt; machine, then simply doing:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token builtin class-name&quot;&gt;cd&lt;/span&gt; ~/backend&lt;br&gt;docker build &lt;span class=&quot;token builtin class-name&quot;&gt;.&lt;/span&gt; -t backend&lt;br&gt;docker tag backend localhost:5000/backend&lt;br&gt;docker push localhost:5000/backend&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Will build the docker image and push it to the registry. Now it should be accessible from our kubernetes deployments. Make sure that your &lt;code&gt;ops&lt;/code&gt; machine is on the same network as your kubernetes cluster. You can do the same with the &lt;code&gt;frontend&lt;/code&gt;, it is exactly the same commands&lt;/p&gt;
+&lt;p&gt;Personally, I am going to remove the &lt;code&gt;ops&lt;/code&gt; machine and just run the docker registry as a service on the kubernetes cluster, with no external IP. That way I can save money on machines and make it simpler (no physical machines to take care of, just Kubernetes &lt;code&gt;YAML&lt;/code&gt; files). To solve the problem of saving images, you can add the configuration to save your images to your cloud provider&#39;s storage (&lt;code&gt;Google Cloud Storage&lt;/code&gt; in my case), or volumes will do just fine. Jenkins can also easily put on the Kubernetes cluster using a volume (With declarative pipelines you won&#39;t even need to back up your jenkins volume, it&#39;s stateless anyway! Important things to consider on your design).&lt;/p&gt;
+&lt;h3 id=&quot;the-kubernetes-deployments&quot;&gt;The Kubernetes Deployments &lt;a class=&quot;direct-link&quot; href=&quot;#the-kubernetes-deployments&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;The apps were named &lt;code&gt;backend&lt;/code&gt; and &lt;code&gt;frontend&lt;/code&gt; for simplicity reasons. Now, for the backend deployment:&lt;/p&gt;
+&lt;pre class=&quot;language-yaml&quot;&gt;&lt;code class=&quot;language-yaml&quot;&gt;&lt;span class=&quot;token key atrule&quot;&gt;apiVersion&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; apps/v1&lt;br&gt;&lt;span class=&quot;token key atrule&quot;&gt;kind&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; Deployment&lt;br&gt;&lt;span class=&quot;token key atrule&quot;&gt;metadata&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;  &lt;span class=&quot;token key atrule&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; backend&lt;br&gt;&lt;span class=&quot;token key atrule&quot;&gt;spec&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;  &lt;span class=&quot;token key atrule&quot;&gt;replicas&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;3&lt;/span&gt;&lt;br&gt;  &lt;span class=&quot;token key atrule&quot;&gt;selector&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;    &lt;span class=&quot;token key atrule&quot;&gt;matchLabels&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;      &lt;span class=&quot;token key atrule&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; backend&lt;br&gt;  &lt;span class=&quot;token key atrule&quot;&gt;template&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;    &lt;span class=&quot;token key atrule&quot;&gt;metadata&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;      &lt;span class=&quot;token key atrule&quot;&gt;labels&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token key atrule&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; backend&lt;br&gt;    &lt;span class=&quot;token key atrule&quot;&gt;spec&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;      &lt;span class=&quot;token key atrule&quot;&gt;containers&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;      &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token key atrule&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; backend&lt;br&gt;        &lt;span class=&quot;token key atrule&quot;&gt;image&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; ops&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;5000/backend&lt;br&gt;        &lt;span class=&quot;token key atrule&quot;&gt;ports&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token key atrule&quot;&gt;containerPort&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;8000&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The metadata &lt;code&gt;name&lt;/code&gt; is &lt;code&gt;backend&lt;/code&gt;, pretty unimportant, I usually put the same number of replicas as the number of machines, I find it unuseful to put more since my backend apps are already designed for multithreading, now the important part is the selector, to be able to add a pointer to this deployment, your service needs to know how to find it, in kubernetes cluster we use selectors. so here if we match the label app=backend, it will redirect the service request to this deployment, you can have multiple deployments having the same matchLabel, reason you would do this is maybe A-B testing with different technologies but don&#39;t want to mix the Deployments (e.g an app written in Python and rewritten in C++ to test the performance, using the same service and 2 deployments would work just fine!). It&#39;s important for me to keep every part as lean as possible, mixing everything together is a pain in the ass to debug.&lt;/p&gt;
+&lt;p&gt;Now, for the specs of the &lt;code&gt;Deployment&lt;/code&gt;, we have the image that we uploaded earlier to our registry (the machine name is &lt;code&gt;ops&lt;/code&gt;, don&#39;t mix in IP addresses, you don&#39;t want to start managing that too) on &lt;code&gt;port 5000&lt;/code&gt;, the image name is just &lt;code&gt;backend&lt;/code&gt;, so &lt;code&gt;ops:5000/backend&lt;/code&gt;. Done! You have your simple &lt;code&gt;Deployment&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;I will paste the frontend one, but it is exactly the same, minus the port:&lt;/p&gt;
+&lt;pre class=&quot;language-yaml&quot;&gt;&lt;code class=&quot;language-yaml&quot;&gt;&lt;span class=&quot;token key atrule&quot;&gt;apiVersion&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; apps/v1&lt;br&gt;&lt;span class=&quot;token key atrule&quot;&gt;kind&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; Deployment&lt;br&gt;&lt;span class=&quot;token key atrule&quot;&gt;metadata&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;  &lt;span class=&quot;token key atrule&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; frontend&lt;br&gt;&lt;span class=&quot;token key atrule&quot;&gt;spec&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;  &lt;span class=&quot;token key atrule&quot;&gt;replicas&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;3&lt;/span&gt;&lt;br&gt;  &lt;span class=&quot;token key atrule&quot;&gt;selector&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;    &lt;span class=&quot;token key atrule&quot;&gt;matchLabels&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;      &lt;span class=&quot;token key atrule&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; frontend&lt;br&gt;  &lt;span class=&quot;token key atrule&quot;&gt;template&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;    &lt;span class=&quot;token key atrule&quot;&gt;metadata&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;      &lt;span class=&quot;token key atrule&quot;&gt;labels&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token key atrule&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; frontend&lt;br&gt;    &lt;span class=&quot;token key atrule&quot;&gt;spec&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;      &lt;span class=&quot;token key atrule&quot;&gt;containers&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;      &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token key atrule&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; frontend&lt;br&gt;        &lt;span class=&quot;token key atrule&quot;&gt;image&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; ops&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;5000/frontend&lt;br&gt;        &lt;span class=&quot;token key atrule&quot;&gt;ports&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token key atrule&quot;&gt;containerPort&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;80&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;To deploy these, you need to use &lt;code&gt;kubectl&lt;/code&gt; and connect your &lt;code&gt;kubectl&lt;/code&gt; to your cluster, so it knows where to execute the commands, I use cloud so usually if you go to your &lt;code&gt;Cluster&lt;/code&gt; panel it will tell you what command to run to do this.&lt;/p&gt;
+&lt;p&gt;To create a &lt;code&gt;Deployment&lt;/code&gt;, copy the backend deployment &lt;code&gt;YAML&lt;/code&gt; configuration above to &lt;code&gt;backend-deployment.yaml&lt;/code&gt; and simply run (ditto for &lt;code&gt;frontend&lt;/code&gt;):&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;kubectl create -f backend-deployment.yaml&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&quot;the-kubernetes-services&quot;&gt;The Kubernetes Services &lt;a class=&quot;direct-link&quot; href=&quot;#the-kubernetes-services&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;Now that we have deployments, you can do nothing with them, you need to expose them to the external world, here&#39;s the backend &lt;code&gt;Service&lt;/code&gt;:&lt;/p&gt;
+&lt;pre class=&quot;language-yaml&quot;&gt;&lt;code class=&quot;language-yaml&quot;&gt;&lt;span class=&quot;token key atrule&quot;&gt;apiVersion&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; v1&lt;br&gt;&lt;span class=&quot;token key atrule&quot;&gt;kind&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; Service&lt;br&gt;&lt;span class=&quot;token key atrule&quot;&gt;metadata&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;  &lt;span class=&quot;token key atrule&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; backend&lt;br&gt;&lt;span class=&quot;token key atrule&quot;&gt;spec&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;  &lt;span class=&quot;token key atrule&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; LoadBalancer&lt;br&gt;  &lt;span class=&quot;token key atrule&quot;&gt;selector&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;    &lt;span class=&quot;token key atrule&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; backend&lt;br&gt;  &lt;span class=&quot;token key atrule&quot;&gt;ports&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;    &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token key atrule&quot;&gt;protocol&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; TCP&lt;br&gt;      &lt;span class=&quot;token key atrule&quot;&gt;port&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;8000&lt;/span&gt;&lt;br&gt;      &lt;span class=&quot;token key atrule&quot;&gt;targetPort&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;8000&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;What I like from this, is it pretty easy to read and understand, first we have the &lt;code&gt;metadata&lt;/code&gt;, the name of your &lt;code&gt;Service&lt;/code&gt;, I like using the same &lt;code&gt;metadata&lt;/code&gt; as the &lt;code&gt;Deployment&lt;/code&gt; when it is a simple architecture like this (1:1). Second, there&#39;s the &lt;code&gt;specs&lt;/code&gt;, for a Load Balancer, we simply put &lt;code&gt;type: LoadBalancer&lt;/code&gt; (so your orchestrator assigns an external IP), then we have the selector, for us it is simply &lt;code&gt;app: backend&lt;/code&gt; since if you remember correctly in the &lt;code&gt;Deployment&lt;/code&gt; we put &lt;code&gt;matchLabels: {app: backend}&lt;/code&gt;. For the ports, I put &lt;code&gt;TCP&lt;/code&gt; because it&#39;s the default one and it&#39;s irrelvant to me for now but you could use anything you want. The port I&#39;m exposing my &lt;code&gt;Service&lt;/code&gt; on is &lt;code&gt;port: 8000&lt;/code&gt;, and the target port on the &lt;code&gt;Deployment&lt;/code&gt; is also &lt;code&gt;targetPort: 8000&lt;/code&gt;. You could change this for e.g if your frontend deployment runs on &lt;code&gt;8080&lt;/code&gt; you could do something like this:&lt;/p&gt;
+&lt;pre class=&quot;language-yaml&quot;&gt;&lt;code class=&quot;language-yaml&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token key atrule&quot;&gt;protocol&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; TCP&lt;br&gt;  &lt;span class=&quot;token key atrule&quot;&gt;port&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;80&lt;/span&gt;&lt;br&gt;  &lt;span class=&quot;token key atrule&quot;&gt;targetPort&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;8080&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;You can also have multiple ports exposed on the same &lt;code&gt;Service&lt;/code&gt;, e.g your &lt;code&gt;frontend&lt;/code&gt; usually runs on 80 and 443.&lt;/p&gt;
+&lt;p&gt;I will also paste the &lt;code&gt;frontend Service&lt;/code&gt; here but there&#39;s nothing special about it:&lt;/p&gt;
+&lt;pre class=&quot;language-yaml&quot;&gt;&lt;code class=&quot;language-yaml&quot;&gt;&lt;span class=&quot;token key atrule&quot;&gt;apiVersion&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; v1&lt;br&gt;&lt;span class=&quot;token key atrule&quot;&gt;kind&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; Service&lt;br&gt;&lt;span class=&quot;token key atrule&quot;&gt;metadata&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;  &lt;span class=&quot;token key atrule&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; frontend&lt;br&gt;&lt;span class=&quot;token key atrule&quot;&gt;spec&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;  &lt;span class=&quot;token key atrule&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; LoadBalancer&lt;br&gt;  &lt;span class=&quot;token key atrule&quot;&gt;selector&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;    &lt;span class=&quot;token key atrule&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; frontend&lt;br&gt;  &lt;span class=&quot;token key atrule&quot;&gt;ports&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;    &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token key atrule&quot;&gt;protocol&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; TCP&lt;br&gt;      &lt;span class=&quot;token key atrule&quot;&gt;port&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;80&lt;/span&gt;&lt;br&gt;      &lt;span class=&quot;token key atrule&quot;&gt;targetPort&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;80&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;To create a service, you just need to use the same command as the deploment:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;kubectl create -f frontend-service.yaml&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;I think it&#39;s the same command to create any object in the Orchestrator.&lt;/p&gt;
+&lt;h3 id=&quot;ok%2C-done&quot;&gt;Ok, done &lt;a class=&quot;direct-link&quot; href=&quot;#ok%2C-done&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;Hope you enjoyed this article and everything worked for you. If you find an issue in this article, a step missing, or just something unclear, please do not hesitate opening one on my &lt;a href=&quot;https://github.com/serafss2/serafss2.github.io&quot;&gt;serafss2.github.io&lt;/a&gt; repo!&lt;/p&gt;
+&lt;p&gt;You could also contribute with spelling or typo fixes! I&#39;m writting this on &lt;code&gt;emacs&lt;/code&gt;, I don&#39;t know if there&#39;s a spelling pluging, but probably.&lt;/p&gt;
+
+			
+		</content>
+	</entry>
+	
+	<entry>
+		<title>A Guide to running a node.js live server in Docker (react.js example)</title>
+		<link href="https://serafdev.github.io/posts/2020-02-20-a-guide-to-running-a-node-js-live-server-in-docker-react-js-example/"/>
+		<updated>2020-02-20T00:00:00-05:00</updated>
+		<id>https://serafdev.github.io/posts/2020-02-20-a-guide-to-running-a-node-js-live-server-in-docker-react-js-example/</id>
+		<content type="html">
+		  &lt;p&gt;The real TL;DR, clone the repo, run the example, then jump to the Build and Run section:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;git clone &lt;a href=&quot;https://github.com/serafdev/livemount-react-app&quot;&gt;https://github.com/serafdev/livemount-react-app&lt;/a&gt; react-app &amp;amp;&amp;amp; cd react-app&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Setup the development environment&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Create a new React project if you don’t already have one:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;npx create-react-app react-app &amp;amp;&amp;amp; cd react-app&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Put a file on the root of the project named &lt;a href=&quot;http://docker-entrypoint.sh/&quot;&gt;docker-entrypoint.sh&lt;/a&gt; with content:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;#!/bin/sh
+
+case $1 in
+    dev)
+        yarn
+        echo &amp;quot;Running development server on 0.0.0.0:3000..&amp;quot;
+        yarn start
+        ;;
+    test)
+        echo &amp;quot;Running tests..&amp;quot;
+        yarn test
+        ;;
+    sh)
+        /bin/sh
+        ;;
+esac
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;a href=&quot;http://docker-entrypoint.sh/&quot;&gt;docker-entrypoint.sh&lt;/a&gt;&lt;br&gt;
+Another file named Dockerfile with this content:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;FROM node:lts-alpine
+ENV HOST 0.0.0.0
+
+WORKDIR /app
+
+COPY package.json /app
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+
+RUN chmod +x /docker-entrypoint.sh
+ENTRYPOINT [&amp;quot;docker-entrypoint.sh&amp;quot;, &amp;quot;dev&amp;quot;]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&quot;dockerfile&quot;&gt;Dockerfile &lt;a class=&quot;direct-link&quot; href=&quot;#dockerfile&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;Build and run!&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;You’re ready to test! Run your docker command to build the image:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;docker build . -t react-app:local&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Now you can run it by mounting your code to the machine and exposing the node port to your host:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;docker run -v $(pwd):/app -p 3000:3000 react-app:local&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&quot;visit-the-url-on-your-browser%3A-localhost%3A3000%2C-you-should-see-this%3Areact-default-page&quot;&gt;Visit the url on your browser: localhost:3000, you should see this:&lt;br&gt;
+&lt;img src=&quot;https://serafdev.github.io/content/images/2020/05/image-5.png&quot; alt=&quot;&quot;&gt;React Default page &lt;a class=&quot;direct-link&quot; href=&quot;#visit-the-url-on-your-browser%3A-localhost%3A3000%2C-you-should-see-this%3Areact-default-page&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;Test Reloading&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Now let’s modify some code and reload the page, open src/App.js with your favourite editor and modify the content of the &lt;/p&gt;&lt;p&gt;&lt;/p&gt; dom to: Noice (or anything, really). Now if you reload you should have:&lt;br&gt;
+&lt;img src=&quot;https://serafdev.github.io/content/images/2020/05/image-1.png&quot; alt=&quot;&quot;&gt;Just noice.&lt;br&gt;
+A more detailed article will be coming soon. If you have issues or find difficulties, do not hesitate leaving a comment.&lt;p&gt;&lt;/p&gt;
+&lt;p&gt;Happy hot-reloading!&lt;/p&gt;
+
+			
+		</content>
+	</entry>
+	
+	<entry>
+		<title>How Magit improved my workflow</title>
+		<link href="https://serafdev.github.io/posts/2020-03-28-how-magit-improved-my-workflow/"/>
+		<updated>2020-03-28T00:00:00-04:00</updated>
+		<id>https://serafdev.github.io/posts/2020-03-28-how-magit-improved-my-workflow/</id>
+		<content type="html">
+		  &lt;p&gt;As a software developer, git is the most important collaborative tool you have to use, mastering it is essential for anyone that collaborates in the code base.&lt;/p&gt;
+&lt;p&gt;Your git repository probably broke so many times, you most certainly staged (git add) files (those database credentials) and had to google to find out how to un-stage them.&lt;/p&gt;
+&lt;p&gt;I will cover some of these and let you explore more! I always wanted to showcase some of Magit, now that it is available for VSCode and not only on my editor, it is time for you too to do the switch, I can guarantee that it will be available for most editors sometime in this decade! (lol, I’m a patient man, a decade is nothing)&lt;/p&gt;
+&lt;hr&gt;
+&lt;h1 id=&quot;installation&quot;&gt;Installation &lt;a class=&quot;direct-link&quot; href=&quot;#installation&quot;&gt;#&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;As from last month, VSCode users can get it on the marketplace, I will although go through this article using emacs with evil-mode, not that it matters, the only difference should be the keybindings, the workflow will be the same. I will still try to get the keybindings from VSCode when I can.&lt;/p&gt;
+&lt;p&gt;For emacs users you can install it following the official guide here &lt;a href=&quot;https://magit.vc/manual/magit/Installing-from-Melpa.html#Installing-from-Melpa&quot;&gt;https:/magit.vc/manual/magit/Installing-from-Melpa.html#Installing-from-Melpa&lt;/a&gt;. If you use the spacemacs configuration you only need to add “magit” to your layers.&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;Spoil alert, you can jump at the bottom of the page to look at the whole menu of Magit in my editor. It’s basically most git commands.&lt;/p&gt;
+&lt;p&gt;I will here only cover git add, commit, remote, push.&lt;/p&gt;
+&lt;h1 id=&quot;git-add&quot;&gt;git add &lt;a class=&quot;direct-link&quot; href=&quot;#git-add&quot;&gt;#&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;This is the basic process that all of us have to go through so many times, as simple as it is, you still have to remember what you’re adding, what were you working on, etc. So basically you often need to go through all the changes you made, make sure you didn’t forget any Printf or console.logs, so the first thing you do is a git status to look at what files were changed, and then a git diff to look at the changes made compared to the latest commit. If you find anything you need to remove or modify, you need to go inside that file and do your changes.&lt;/p&gt;
+&lt;p&gt;Now that you’re done, you need to stage (git add) the files you want to commit, then commit and push. On a side note here, it is important to stage files carefully, I’ve seen people use the git add — all blindly. Don’t do that make sure you know exactly what you’re staging.&lt;/p&gt;
+&lt;p&gt;Let’s now see how this process goes with Magit, first you need to open the “Magit Status” buffer, you can open the buffer by running the tool in your editor, or simply the keybinding for it.&lt;/p&gt;
+&lt;p&gt;So I prepared some changes and I am ready for my next commit. I open the buffer (SPC+g+s for me):&lt;br&gt;
+&lt;img src=&quot;https://serafdev.github.io/img/2020/05/image-20.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;
+You can see how cool already the Magit status buffer is already, you can see the Unstaged changes, the recent commits just under it and in the same windows you can still see the file you’re editing on top. In the same buffer we have git status and git log and the buffer is interactive! Let’s put our cursor on the line with “modified main.go” and click “TAB”.&lt;br&gt;
+&lt;img src=&quot;https://serafdev.github.io/img/2020/05/image-19.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;
+Noice. So that’s the change I made, okay, so now in the same buffer we also have a git diff and I can easily stage only parts of a file, each part has a pink header here. Hmm, I don’t like the first part, I will have to remove that x it seems like it got there unintentionally, but the other part looks great.&lt;/p&gt;
+&lt;p&gt;I will point on the “package mainx” part and click “x” for Discard, then I will point on the Println modification and click “s” for Stage:&lt;br&gt;
+&lt;img src=&quot;https://serafdev.github.io/img/2020/05/image-18.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;
+Ok, now we have our first hunk discarded and the Println modification is Staged, we can see that it is now in the Staged section. If you want to unstage, you can just unstaged it back by click on “u”.&lt;/p&gt;
+&lt;p&gt;You can also click enter in any part of the Unstagged, Untracked and Staged hunks to open them and modify them.&lt;/p&gt;
+&lt;h1 id=&quot;git-commit&quot;&gt;git commit &lt;a class=&quot;direct-link&quot; href=&quot;#git-commit&quot;&gt;#&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;We are now ready to commit. So I simply click “c” for commit:&lt;br&gt;
+&lt;img src=&quot;https://serafdev.github.io/img/2020/05/image-17.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;
+Wait, what? I did not know the existence of all those arguments before using Magit, I always had to go to stackoverflow and search for “How to override the author? How to Fixup? How to squash? Can I make this verbose? How to reset the author when amending?” Welp, no more. So let’s keep this simple, I just want to commit. I will click “c” again as shown in the bottom legend.&lt;br&gt;
+&lt;img src=&quot;https://serafdev.github.io/img/2020/05/image-16.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;
+We now have 2 buffers open, one for the commit message and one with the details of all the changes made, this is so helpful when writing a commit message (and keeps giving you visibility in case you forgot something).&lt;/p&gt;
+&lt;p&gt;I will write a message and save my commit with “CTRL+C CTRL+C”.&lt;br&gt;
+&lt;img src=&quot;https://serafdev.github.io/img/2020/05/image-15.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;
+Before pushing our changes, we can see the line “Head: master Second Commit” but there is no line for “Push”, that is because we do not have a remote repository.&lt;/p&gt;
+&lt;h1 id=&quot;git-remote&quot;&gt;git remote &lt;a class=&quot;direct-link&quot; href=&quot;#git-remote&quot;&gt;#&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;Let’s add the remote repository, press M for reMote (lol)&lt;br&gt;
+&lt;img src=&quot;https://serafdev.github.io/img/2020/05/image-14.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;
+Then “a” to Add a remote branch:&lt;br&gt;
+&lt;img src=&quot;https://serafdev.github.io/img/2020/05/image-13.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;
+After writing the Remote name (I named is “origin” as per the convention) press Enter:&lt;br&gt;
+&lt;img src=&quot;https://serafdev.github.io/img/2020/05/image-12.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;
+Now set the url and click enter (You can put an ssh-style url too):&lt;br&gt;
+&lt;img src=&quot;https://serafdev.github.io/img/2020/05/image-11.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;
+Finally press y for setting “remote.pushDefault” to “origin”:&lt;br&gt;
+&lt;img src=&quot;https://serafdev.github.io/img/2020/05/image-10.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;
+Now you can see the second line appear, saying “Push: origin/master does not exist”. The “does not exist” part is because our remote branch is empty.&lt;/p&gt;
+&lt;h1 id=&quot;git-push&quot;&gt;git push &lt;a class=&quot;direct-link&quot; href=&quot;#git-push&quot;&gt;#&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;We are now ready to push, I will simply press on “P” (capital P, aka Shift+P):&lt;br&gt;
+&lt;img src=&quot;https://serafdev.github.io/img/2020/05/image-9.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;
+This view gives me many options, the one that I will focus on is the “Push master to” section, you still can quickly skim on the other parts to see that it gives you also the option to push another branch or tag while staying on the current branch. There’s also the usual arguments which are fairly simple for the “git push” command.&lt;/p&gt;
+&lt;p&gt;Let’s look at the line with the “p” command, saying that if we push it will push to origin/master, it will also create the remote branch for us. Let’s do that:&lt;br&gt;
+&lt;img src=&quot;https://serafdev.github.io/img/2020/05/image-8.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;
+It prompts me for my username and password (If you usually do this process with an ssh key it wouldn’t prompt anything):&lt;br&gt;
+&lt;img src=&quot;https://serafdev.github.io/img/2020/05/image-7.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;
+The “Push:” line changed, the latest commit on origin/master is now “Second Commit” and we are done with our day-to-day work.&lt;/p&gt;
+&lt;h1 id=&quot;magit-commands&quot;&gt;Magit Commands &lt;a class=&quot;direct-link&quot; href=&quot;#magit-commands&quot;&gt;#&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;Here’s a simple screenshot with all commands available, in the Magit Status buffer, click “h”:&lt;br&gt;
+&lt;img src=&quot;https://serafdev.github.io/img/2020/05/image-6.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;
+I find this very interesting because it shows me many commands that I usually don’t use and I should use more, and many commands that I didn’t know existed, it is easy to click on any of them to look at the details and look at what they do. In the beginnings this buffer is your best friend, in no time all these commands will become automatic.&lt;/p&gt;
+&lt;h1 id=&quot;the-end.&quot;&gt;The End. &lt;a class=&quot;direct-link&quot; href=&quot;#the-end.&quot;&gt;#&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;It looked pretty long (and felt pretty long to me because I had to do screenshots), but when you get used to the keybindings, this whole process shouldn’t take more than 15 seconds + Writing commit time (assuming that you are only adding 1 change and don’t have to go through your files during add). Here’s a full recap to show how quick things can go:&lt;/p&gt;
+&lt;p&gt;git status: SPC g s&lt;/p&gt;
+&lt;p&gt;git add: s for stage, u for unstage, x for discard&lt;/p&gt;
+&lt;p&gt;git commit: c c for commit, c a for commit amend, ctrl c ctrl c to save commit.&lt;/p&gt;
+&lt;p&gt;git push: P p&lt;/p&gt;
+&lt;p&gt;Other great things that I did not cover here are Squash and Fixups that I use very often now that I have Magit, I used to be scared of these but with visibility this tool gives me, it is so simple and quick to use. Also merges and Fixing conflicts is very easy because of this “Magit Status” buffer that shows the conflicts and let’s me directly jump into them.&lt;/p&gt;
+&lt;p&gt;I know there is many GUI tools that helps you with your git process, but those makes you forget what you can or can’t do with git, this let’s me still interact with git the same as I would from the command line.&lt;/p&gt;
+&lt;p&gt;I hope this was useful for you. If you want me to cover anything else, let me know bellow in the comments!&lt;/p&gt;
+&lt;p&gt;Happy Magiting!&lt;/p&gt;
+
+			
+		</content>
+	</entry>
+	
+	<entry>
+		<title>Learn DevOps by deploying a Minecraft Server</title>
+		<link href="https://serafdev.github.io/posts/2020-03-30-learn-devops-by-deploying-a-minecraft-server/"/>
+		<updated>2020-03-30T00:00:00-04:00</updated>
+		<id>https://serafdev.github.io/posts/2020-03-30-learn-devops-by-deploying-a-minecraft-server/</id>
+		<content type="html">
+		  &lt;p&gt;Learn about high availability services, CI/CD, Linux Services, Dynamic DNS and some more DevOps and sysadmin tasks, just by deploying your Minecraft server and automating the configuration files deployment.&lt;/p&gt;
+&lt;p&gt;This is a beginner friendly tutorial aimed for everyone with hopes to enlighten everyone on the job of a DevOps engineer by going through your first (or not) automated deployment. For more advanced readers, you can skim through most paragraphs because they will go into details on explaining every corner.&lt;/p&gt;
+&lt;h1 id=&quot;prerequisites&quot;&gt;Prerequisites &lt;a class=&quot;direct-link&quot; href=&quot;#prerequisites&quot;&gt;#&lt;/a&gt;&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;A machine running Ubuntu&lt;/li&gt;
+&lt;li&gt;A GitHub account&lt;/li&gt;
+&lt;li&gt;Access to your router’s ports management (for the ports forwarding)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Install Ubuntu on any of your machines.&lt;/p&gt;
+&lt;p&gt;At the time of this writing my setup looks like this: A small server right by my router in the corner of my dining room, running Ubuntu Server 18.04. You can use a spare Laptop or a Raspberry Pie, really, anything will do. For this tutorial, if you are already on Linux, you can just use your current installation.&lt;/p&gt;
+&lt;p&gt;For the GitHub account, you can just visit the official website to create an account.&lt;/p&gt;
+&lt;p&gt;You will also need to do some port forwarding so people can access your Minecraft server from outside your home network, also for having GitHub actions accessing your server for the automated deployments.&lt;/p&gt;
+&lt;p&gt;Details on all of these will come through the article.&lt;/p&gt;
+&lt;h1 id=&quot;set-up&quot;&gt;Set up &lt;a class=&quot;direct-link&quot; href=&quot;#set-up&quot;&gt;#&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;On your Linux machine, create a folder named /opt/minecraft and change it’s ownership to your main user. What this means is that the folder will be modifiable by you without the need to use super user privileges (sudo), to do so you can do:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;sudo mkdir /opt/minecraft&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;sudo chown $USER /opt/minecraft&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;This is where we will put our Minecraft server. Go ahead and download the server archive using “wget”, you can find the link at the page bellow by clicking on the green download button under Ubuntu Server Software for Ubuntu and hitting “Copy Link”, you can do that on another machine if you’re using Ubuntu Server, and just write it down there: &lt;a href=&quot;https://www.minecraft.net/en-us/download/server/bedrock/&quot;&gt;https://www.minecraft.net/en-us/download/server/bedrock/&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;At the time of writing, the command looks like this, make sure to use the latest version:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;wget &lt;a href=&quot;https://minecraft.azureedge.net/bin-linux/bedrock-server-1.14.32.1.zip&quot;&gt;https://minecraft.azureedge.net/bin-linux/bedrock-server-1.14.32.1.zip&lt;/a&gt; -P /tmp/&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;-P /tmp/ is used to basically tell wget to put the file in the /tmp/ directory (P for prefix).&lt;/p&gt;
+&lt;p&gt;Install unzip if you don’t already have it,&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;sudo apt install unzip&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Now we can unzip the content of that file inside the folder we created earlier&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;unzip /tmp/bedrock-server-1.14.32.1.zip -d /opt/minecraft&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Test your installation using:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;cd /opt/minecraft &amp;amp;&amp;amp; chmod +x ./bedrock_server &amp;amp;&amp;amp; LD_LIBRARY_PATH=. ./bedrock_server&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Basically, we go into the folder, we change the mod of the bedrock_server file to executable and run the server with environment variable LD_LIBRARY_PATH set to current location. Pretty simple when someone puts some words to those cryptic commands right?&lt;/p&gt;
+&lt;p&gt;If the app runs smoothly, you should see a logstack like this one:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;NO LOG FILE! — setting up server logging…&lt;br&gt;
+[2020–03–29 23:14:30 INFO] Starting Server&lt;br&gt;
+[2020–03–29 23:14:30 INFO] Version 1.14.32.1&lt;br&gt;
+[2020–03–29 23:14:30 INFO] Session ID f6b04942–72ed-414d-88d3–024ad4c8683c&lt;br&gt;
+[2020–03–29 23:14:30 INFO] Level Name: Bedrock level&lt;br&gt;
+[2020–03–29 23:14:30 INFO] Game mode: 0 Survival&lt;br&gt;
+[2020–03–29 23:14:30 INFO] Difficulty: 1 EASY&lt;br&gt;
+[2020–03–29 23:14:30 INFO] opening worlds/Bedrock level/db&lt;br&gt;
+[2020–03–29 23:14:32 INFO] IPv4 supported, port: 19132&lt;br&gt;
+[2020–03–29 23:14:32 INFO] IPv6 supported, port: 19133&lt;br&gt;
+[2020–03–29 23:14:32 INFO] IPv4 supported, port: 57890&lt;br&gt;
+[2020–03–29 23:14:32 INFO] IPv6 supported, port: 40946&lt;br&gt;
+[2020–03–29 23:14:33 INFO] Server started.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Hurray! We’re ready for the fun part.&lt;/p&gt;
+&lt;h1 id=&quot;the-minecraft-service-(linux-daemon)&quot;&gt;The Minecraft Service (Linux Daemon) &lt;a class=&quot;direct-link&quot; href=&quot;#the-minecraft-service-(linux-daemon)&quot;&gt;#&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;A quick explanation of what a daemon is, it is just an application that runs in the background. Basically it logs nothing to your standard output (eh, generally, because you can hack a daemon that spams and takes control of your standard output if you want, but that’s beside the point). We want this because we don’t want to have to go manually open a terminal or a background terminal and run our Minecraft server. We are too lazy for that, we will automate everything.&lt;/p&gt;
+&lt;p&gt;Here’s how our Minecraft Service looks like, I will explain every part afterwards.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;[Unit]
+Description=Minecraft Server
+After=network.target
+
+[Service]
+User=minecraft
+Group=minecraft
+
+Type=Simple
+
+WorkingDirectory=/opt/minecraft
+ExecStart=/bin/sh -c &amp;quot;LD_LIBRARY_PATH=. ./bedrock_server&amp;quot;
+TimeoutStopSec=20
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;First we have the Description, After means, we want this service to run after the network is ready.&lt;/p&gt;
+&lt;p&gt;In Service, we have our User and Group, replace these by yours. To find out in what group you’re in you can just run the command “group” on the shell, you will see a list of those, just pick the one named after your user. To keep it simple, Type=Simple (nice dad pun) means that the process running on ExecStart is the main process of this service. The WorkingDirectory is the working directory which is the location of our server /opt/minecraft.&lt;/p&gt;
+&lt;p&gt;ExecStart is the command we tested before, sh -c means run this command as interpreted by sh. /bin/sh is the absolute path of shell. Timeout, is just the timeout of no response when it has to stop gracefully, and Restart=on-failure, means if there’s a crash it will try to restart again, if you stop it manually it will not restart except on reboot if you enable the service.&lt;/p&gt;
+&lt;p&gt;Let’s test this! I have setup a repository for this, so go ahead and clone it.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;git clone &lt;a href=&quot;https://github.com/serafss2/mineconf.git&quot;&gt;https://github.com/serafdev/mineconf.git&lt;/a&gt; ~/mineconf&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Modify the minecraft.service file to put your User and Group, we will use nano for this but you can also use emacs or vi if you are comfortable with any other editor.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;nano ~/mineconf/minecraft.service&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;“CTRL+x, Y, ENTER” to save your changes.&lt;/p&gt;
+&lt;p&gt;Now let’s make a symbolic link to that file and put it in the services folder so it can be recognized by systemctl (services tool)&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;ln -s $HOME/mineconf/minecraft.service /etc/systemd/system/minecraft.service&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Now your service should be ready to be started and enabled. Enabling a service makes it run when system boots.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;sudo systemctl start minecraft&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;sudo systemctl enable minecraft&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;You can check if the server started successfully with&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;sudo systemctl status minecraft&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Now that’s working, we need to add a user to the whitelist so you can have him access the server! Go ahead and add yourself, open ~/mineconf/whitelist.json and add yourself in it. For Minecraft Bedrock server the content should look like this:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;[
+  {
+    &amp;quot;ignoresPlayerLimit&amp;quot;: false,
+    &amp;quot;name&amp;quot;: &amp;quot;AUser&amp;quot;,
+    &amp;quot;uuid&amp;quot;: &amp;quot;erf895cc-9x7v-7da5-fasd–asgaasqwe2214&amp;quot;
+  }
+]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;To findout what your uuid is you can paste your username into any Minecraft user lookup, it’ll give all the info. Here’s one: &lt;a href=&quot;https://mcuuid.net/&quot;&gt;https://mcuuid.net/&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Now link that file to your minecraft server installation and restart the server:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;rm /opt/minecraft/whitelist.json&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;ln -s $HOME/mineconf/whitelist.json /opt/minecraft/whitelist.json&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;sudo systemctl restart minecraft&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Yeahh, now you’ve got your own minecraft server running in your home. Let’s test it! Go to another device in your home network, make sure you’re connected to the same network because we did not setup port forwarding and Dynamic DNS yet (more into these next), and log in to Minecraft, on the Server tab you should be able to see your Server online! Grreeat :) I personally play on both Windows and iPhone, my brother plays on Android and Windows and my other brother plays on the Nintendo Switch, and we can all join the same server! Pretty cool in my opinion!&lt;/p&gt;
+&lt;p&gt;Okay, now let’s make it accessible from the outside world&lt;/p&gt;
+&lt;h1 id=&quot;port-forwarding&quot;&gt;Port Forwarding &lt;a class=&quot;direct-link&quot; href=&quot;#port-forwarding&quot;&gt;#&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;Log in to your router, usually 192.168.0.1 or 192.168.0.2, look in the advance settings and Port Forwarding, sadly every router has it’s own specific settings so you might be better looking on duckduck.go “Port Forwarding &lt;Router Model=&quot;&quot;&gt;” or just looking around yourself, add Port 19132 TCP/UDP forwarded to 19132 Your-Minecraft-Machine, do the same for Port 22 TCP forwarded to 22 Your-Minecraft-Machine.&lt;/Router&gt;&lt;/p&gt;
+&lt;p&gt;To just briefly explain what this is about, it is about accessing your server from the outside world. When someone writes your IP Address on minecraft, it will redirect the traffic to your router, but your router doesn’t know what to do with that address, because the address is your whole network’s IP Address. So basically with Port Forwarding, you tell your router “If someone contacts us at port 22 or 19132, redirect the traffic to the minecraft machine”, it should be fairly simple to setup.&lt;/p&gt;
+&lt;p&gt;After you done that, let’s test it out! (I really like tests). Connect your PC or Mobile phone that runs minecraft to your LTE or hotspot connection (make sure to set the limit on Windows to 100MB or something low like that to not consume your whole data in case you forget downloads in the background). Go ahead and look at your external IP, on your minecraft machine, just run this command: &lt;code&gt;curl ifconfig.me&lt;/code&gt; Click Add Server in minecraft and write that address down, put 19132 for the port.&lt;/p&gt;
+&lt;p&gt;Yeahhh, you can already tell your friends to log into your server! You can take a small break and go build a house, playing minecraft is part of the tutorial.&lt;/p&gt;
+&lt;h1 id=&quot;dynamicdns&quot;&gt;DynamicDNS &lt;a class=&quot;direct-link&quot; href=&quot;#dynamicdns&quot;&gt;#&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;Okay, now that you built your first house and waiting until the zombies go away because you have no bed yet. Let’s deal with the Dynamic IP issue. Common ISPs distribute ephemeral IP addresses to non-businesses, what this means is that if your router goes down and back up, you will be assigned a new IP Address and will have to go through getting the new IP and distributing it to your friends again, this is very annoying, this is what I used to do in college because I did not know much about basic networking.&lt;/p&gt;
+&lt;p&gt;DynamicDNS is a feature domain providers provide for this exact problem, first let’s explain what DNS is. Basically the Domain Name System (DNS) is just like your contacts app, you got the name and some more information about your contact like his phone number, in this case it is just the IP Address that is assigned by your ISP (Internet Service Provider), so basically, instead of writing IP Addresses when we access websites, we instead write names and DNS servers will go get the IP address and bring us back the content we requested. Now, DynamicDNS is the same thing, but one of your computers in your home tells your Domain provider “Hey dude, I got a new IP Address, can you record this to the (decentralized) contact list?” This way, you won’t care if the IP Address changes.&lt;/p&gt;
+&lt;p&gt;Personally, I have my own domains, they can go as low as 11 dollars (or even less), I use them for my emails and business, but for this tutorial we will go ahead and use noip. Go ahead and make a free account at &lt;a href=&quot;https://www.noip.com/client/linux/noip-duc-linux.tar.gz&quot;&gt;https://www.noip.com/&lt;/a&gt;. Finish all the initial setup and go on the DynamicDNS tab, pick your hostname and click next, fill in the information they ask you, put Minecraft Server or just skip the second step, pick yes for Device always connected on the network, click on download the DUC, it will show the steps on how to install the app that will update the DNS automatically.&lt;/p&gt;
+&lt;p&gt;I will add the commands here, but you basically can just follow their tutorial for this. At this time, we’re at version 2.1.9, but for the 4th step, you can write no-ip- and hit tab to autocomplete.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;a href=&quot;https://www.noip.com/client/linux/noip-duc-linux.tar.gz&quot;&gt;wget https://www.noip.com/client/linux/noip-duc-linux.tar.gz&lt;/a&gt; -P /usr/local/src&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;cd /usr/local/src&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;tar xzf noip-duc-linux.tar.gz&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;cd no-ip-2.1.9&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;make&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;make install&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Now you can create the configuration file using&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;/usr/local/bin/noip2 -C&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Enter your username, password and hostname.&lt;/p&gt;
+&lt;p&gt;Now launch the app:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;/usr/local/bin/noip2&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Make it launch at startup, create a service like the one we did earlier and put it in /etc/systemd/system/noip2.service&lt;/p&gt;
+&lt;p&gt;I found one that works, a gist from Nathan Giesbrecht, so copy the bellow content and put it inside that file and then start and enable:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;nano /etc/systemd/system/noip2.service&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;pre&gt;&lt;code&gt;# Simple No-ip.com Dynamic DNS Updater
+#
+# By Nathan Giesbrecht (http://nathangiesbrecht.com)
+#
+# 1) Install binary as described in no-ip.com&#39;s source file (assuming results in /usr/local/bin)
+# 2) Run sudo /usr/local/bin/noip2 -C to generate configuration file
+# 3) Copy this file noip2.service to /etc/systemd/system/
+# 4) Execute `sudo systemctl daemon-reload`
+# 5) Execute `sudo systemctl enable noip2`
+# 6) Execute `sudo systemctl start noip2`
+#
+# systemd supports lots of fancy features, look here (and linked docs) for a full list:
+#   http://www.freedesktop.org/software/systemd/man/systemd.exec.html
+
+[Unit]
+Description=No-ip.com dynamic IP address updater
+After=network.target
+After=syslog.target
+
+[Install]
+WantedBy=multi-user.target
+Alias=noip.service
+
+[Service]
+# Start main service
+ExecStart=/usr/local/bin/noip2
+Restart=always
+Type=forking
+&lt;/code&gt;&lt;/pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;sudo systemctl start noip2&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;sudo systemctl enable noip2&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;All right, let’s go back to the noip dashboard. Click on DynamicDNS -&amp;gt; No-IP Hostnames. You should see an update to the “Last Update” column and your External IP/Target beside it, greeaat! This look pretty cool. At this time, you already know what will happen. Test time! Go ahead and do the Hotspot thing we earlier did.&lt;/p&gt;
+&lt;p&gt;Cool, now we have a fully functional Minecraft service. We learned about DynamicDNS, IP Forwarding, Linux Daemons and systemctl and a few Linux commands, this looks neat! Good job so far. You can already get comfortable now in your world.&lt;/p&gt;
+&lt;p&gt;You can already start thinking on high availability. Now that you know when your computer restarts, your No-IP and Minecraft Server daemons will kick right in, you can go and tweak your motherboard settings. For example I set 2 things that help me in case of outage or server down, I set the “Boot when electricity comes back” and “WLAN (Wake On Lan)”, this is very nice for when you’re on vacation and your home loses electricity, your computer will boot right back when electricity comes back. the WLAN part is when I shutdown intentionally my PC knowing that no one will login (e.g everyone’s on vacation or something) and then I happen to need to turn my server back on, I just need to contact it and my motherboard will just turn on, notified by my network card that stays on. I don’t really use this feature because I really let my PC online 24/7, but it is still something cool to consider in some situations.&lt;/p&gt;
+&lt;h1 id=&quot;continuous-deployment-%E2%80%94-github-actions&quot;&gt;Continuous Deployment — GitHub Actions &lt;a class=&quot;direct-link&quot; href=&quot;#continuous-deployment-%E2%80%94-github-actions&quot;&gt;#&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;Now, let’s use the tools we put in place so far into action (such unfunny puns).&lt;/p&gt;
+&lt;p&gt;First, let’s make the command “sudo systemctl restart minecraft” not prompt us for a password, run:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;sudo visudo&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Add at the end of the file:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;yourusername ALL=(ALL) NOPASSWD: systemctl restart minecraft&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;As you remember we cloned mineconf to the home directory of the server, that repository contains the pipeline for deployment. We will first need to create a repository and push that into it. Go ahead on Github and create a private repository, name it like you want, I suggest mineconf so you remember to come back to my repo once in a while and update your files!&lt;/p&gt;
+&lt;p&gt;We also need to add your server SSH public key to your github account, this is needed for pulling the git changes without password prompt, for that you can fork from this tutorial and go ahead follow these steps: &lt;a href=&quot;https://help.github.com/en/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account&quot;&gt;https://help.github.com/en/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Okay, so now your repo is located at &lt;a href=&quot;mailto:git@github.com&quot;&gt;git@github.com&lt;/a&gt;:username/mineconf.git (change username with yours), let’s update the mineconf repo that we pulled earlier, run these commands to modify the remote url and push the repo content to it:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;cd ~/mineconf&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;h1 id=&quot;replace-username-by-your-username-underneath&quot;&gt;replace username by your username underneath &lt;a class=&quot;direct-link&quot; href=&quot;#replace-username-by-your-username-underneath&quot;&gt;#&lt;/a&gt;&lt;/h1&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;git remote set-url origin &lt;a href=&quot;mailto:git@github.com&quot;&gt;git@github.com&lt;/a&gt;:username/mineconf.git&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;git push&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Now, in the earlier steps, you created a pair ssh keys, copy the one inside ~/.ssh/id_rsa, which is your private key (Keep it private, it is VERY dangereous to share that) and put it inside the Github Secrets of your Repo, at the same time you should add the HOST (hostname you created in no-ip2) and your linux user username, here how it should look like:&lt;br&gt;
+&lt;img src=&quot;https://serafdev.github.io/content/images/2020/05/image-21.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;
+Ouff, this was a lot to digest. Take your time understanding every step. Also it is very important to audit anything you get from open source, you can check and dig into the Actions I wrote, the services you copy pasted and so on.&lt;/p&gt;
+&lt;p&gt;Let’s look at how they look on the time of writing this:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;name: Minecraft Config CI/CD
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Test SSH Command
+      uses: appleboy/ssh-action@v0.0.7
+      with:
+        # Goes into your configuration files and gets the latest changes from github
+        script: cd ~/mineconf &amp;amp;&amp;amp; git stash &amp;amp;&amp;amp; git pull &amp;amp;&amp;amp; sudo systemctl restart minecraft &amp;amp;&amp;amp; ls -la
+        host: $
+        username: $
+        key: $
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here the “on” keyword means trigger on push and pull request on branch master, I only put one job which is a deployment and runs on an ubuntu machine, the first step checksout to our branch and the second step runs a command via SSH which goes into the mineconf folder, stashes the local changes, pulls the newest changes and restarts minecraft. I added ls -la to show a log on the github actions, helps with debugging etc.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;cd ~/mineconf &amp;amp;&amp;amp; git stash &amp;amp;&amp;amp; git pull &amp;amp;&amp;amp; sudo systemctl restart minecraft &amp;amp;&amp;amp; ls -la&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;For now it is a fairly basic pipeline, I (or anyone, it’s open source) will eventually added tests (because I freaking love tests) and documentation, this will make the deployments more robust, if someone makes a typo and breaks the whitelist file, it will block at the test level. You can already imagine how limitless the options are!&lt;/p&gt;
+&lt;p&gt;This is a typical pipeline that you would write with any tool like gitlab CI, Github Actions, Ansible, etc. They have different namings and stuff but it’s the same thing.&lt;br&gt;
+&lt;img src=&quot;https://miro.medium.com/max/38/0*b_YRCmB33_3mdkwL?q=20&quot; alt=&quot;&quot;&gt;Them Pipelines man&lt;br&gt;
+Next, let’s activate them! Go to ~/mineconf and rename .github_ to .github (I have deactivated it on the public repository by adding a _ at the end)&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;cd ~/mineconf&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;mv .github_ .github&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Add these changes and push to your repo&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;git add .github .github_&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;git add whitelist.json&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;git commit -m “Activated Github Actions and added User to whitelist.json”&lt;/p&gt;
+&lt;p&gt;(whitelist.json keeps getting overrided by the Minecraft Server and messes up with the format, I usually just do a git stash when it’s the only change because I want to keep my json formatted correctly, but since it’s the first time we push it, add it to the repo to not lose the user you added)&lt;/p&gt;
+&lt;p&gt;Now that should’ve automatically triggered the automated deployment. Go ahead into the github repository in the Actions Tab, it should look like this:&lt;br&gt;
+&lt;img src=&quot;https://serafdev.github.io/content/images/2020/05/image-22.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;
+I can see there that my brother updated the whitelist.json and his friend is now playing on our server, I should get more RAM.&lt;/p&gt;
+&lt;p&gt;Now to finish up, we need to make a symlink for the server properties so you can play with it on Github, and the permissions.json. You can easily go ahead and remove the files that exist on the server and create the symlinks:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;rm /opt/minecraft/permissions.json /opt/minecraft/server.properties&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;ln -s $HOME/mineconf/server.properties /opt/minecraft/server.properties&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;ln -s $HOME/mineconf/permissions.json /opt/minecraft/permissions.json&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;sudo systemctl restart minecraft&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;There you go! You are ready to roll, now, if you need to add someone to your whitelist, you just need to add it directly from the online GitHub GUI. No need to bother with SSHing etc. That’s a good feeling, and that’s the feeling that every DevOps or Developer look for, things that took minutes, hours or days to accomplish, now takes 11 seconds.&lt;/p&gt;
+&lt;h1 id=&quot;conclusion&quot;&gt;Conclusion &lt;a class=&quot;direct-link&quot; href=&quot;#conclusion&quot;&gt;#&lt;/a&gt;&lt;/h1&gt;
+&lt;p&gt;Okay, we learned about running a server, changing file permissions, connecting, ssh keys, automated deployments, DynamicDNS, Port Forwarding. That pretty much covers the whole DevOps job thingy. You’re ready to go to that interview with confidence now, the day to day job doesn’t look very different to this, might get a bit more complicated sometimes but there’s always a simple solution.&lt;/p&gt;
+&lt;p&gt;I hope you enjoyed your read and learned stuff along the way! Don’t hesitate leaving a comment if you find that I went too fast somewhere or need more clarifications or even if you just found a typo or a mistake!&lt;/p&gt;
+
+			
+		</content>
+	</entry>
+	
+	<entry>
+		<title>How to use Caddy as a Reverse-Proxy (With auto-TLS)</title>
+		<link href="https://serafdev.github.io/posts/2020-05-19-how-to-use-caddy-as-a-reverse-proxy-with-auto-tls/"/>
+		<updated>2020-05-19T00:00:00-04:00</updated>
+		<id>https://serafdev.github.io/posts/2020-05-19-how-to-use-caddy-as-a-reverse-proxy-with-auto-tls/</id>
+		<content type="html">
+		  &lt;p&gt;Caddy offers TLS encryption by default (https) and it uses Let’s Encrypt’s authority to automatically generate your certificates. In this short tutorial we will run a small backend and a Caddy web server as a reverse proxy, first in local, and then in a virtual machine on the Cloud (because ports 80 and 443 are blocked in my home, please ISP providers, stop that already). We could’ve used a different port to serve https but it’s not as cool.&lt;/p&gt;
+&lt;p&gt;Let’s pull the code needed for this tutorial:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;git clone &lt;a href=&quot;https://github.com/serafdev/reverse-caddy.git&quot;&gt;https://github.com/serafdev/reverse-caddy.git&lt;/a&gt; &amp;amp;&amp;amp; cd reverse-caddy&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;The only file we need to inspect is the docker-compose.yml file, the others can be ignored, they are only used to build and run a small backend server to test our reverse-proxy situation. Let’s break it down.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;version: &#39;3&#39;
+volumes:
+  caddy_data:
+  caddy_config:
+services:
+  caddy:
+    image: caddy
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    ports:
+      - 80:80
+      - 443:443
+    command: caddy reverse-proxy --from localhost --to backend:8081 
+  backend:
+    build:
+      context: .
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We have here 2 services, caddy and backend. backend is the backend (woah) and caddy serves as a reverse proxy.&lt;/p&gt;
+&lt;p&gt;There is 2 volumes attached to caddy, there’s caddy_data and caddy_config, these are used to have minimal persistance, of course I always suggest having all your network as code, but let’s go with this anyway as we are only running a reverse proxy.&lt;/p&gt;
+&lt;p&gt;We expose ports 80 and 443 to enable redirection and https and we run the caddy command for the reverse-proxy:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;caddy reverse-proxy — from localhost — to backend:8081&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;In a caddy config this looks like:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;localhost&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;reverse-proxy backend:8081&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Let’s this build:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;docker-compose up -d&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Now you can visit localhost, it will redirect you to &lt;a href=&quot;https://localhost,/&quot;&gt;https://localhost&lt;/a&gt;&lt;br&gt;
+&lt;img src=&quot;https://serafdev.github.io/content/images/2020/05/image-23.png&quot; alt=&quot;&quot;&gt;https, noice&lt;br&gt;
+If we inspect the certificate, it is a self-signed certificate generated by Caddy. This is normal, for security reasons, a TLS certificate for localhost will never be generated by known Authorities. There’s is many tricks to bypass that, but just don’t.&lt;br&gt;
+&lt;img src=&quot;https://serafdev.github.io/content/images/2020/05/image-24.png&quot; alt=&quot;&quot;&gt;Caddy Local Authority&lt;br&gt;
+Okay, let’s go to the next step, let’s create a virtual machine in any cloud, I will be using GCP. Don’t forget to allow HTTP and HTTPS on the firewall level. Ideally use a Ubuntu Server to keep following, but feel free to do whatever you need.&lt;/p&gt;
+&lt;p&gt;Go to this link and follow the steps to install docker engine for Ubuntu: &lt;a href=&quot;https://docs.docker.com/engine/install/ubuntu/&quot;&gt;https://docs.docker.com/engine/install/ubuntu/&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Now we’ll need docker-compose:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;sudo apt install docker-compose&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Double check your installations with docker -v and docker-compose -v, you should have something like this:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;fares@instance-2:~$ docker-compose -v
+docker-compose version 1.17.1, build unknown
+fares@instance-2:~$ docker -v
+Docker version 19.03.9, build 9d988398e7
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Versions&lt;br&gt;
+Okay now install git:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;sudo apt install git&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;And clone the repository we used earlier with the caddy reverse-proxy docker-compose config:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;git clone &lt;a href=&quot;https://github.com/serafdev/reverse-caddy.git&quot;&gt;https://github.com/serafdev/reverse-caddy.git&lt;/a&gt; &amp;amp;&amp;amp; cd reverse-caddy&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Now we just need to do some modifications in the docker-compose.yml file, on the “command” directive in caddy change “localhost” with one of your own domains. I will pick something from my Cloud DNS Zone (gcp.seraf.dev), let’s go with dydy for caddy (??).&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;version: &#39;3&#39;
+volumes:
+  caddy_data:
+  caddy_config:
+services:
+  caddy:
+    image: caddy
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    ports:
+      - 80:80
+      - 443:443
+    command: caddy reverse-proxy --from dydy.gcp.seraf.dev --to backend:8081 
+  backend:
+    build:
+      context: .
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;dydy.gcp.seraf.dev&lt;br&gt;
+Now go to your DNS and add an A record for this new virtual machine, for me the domain name is “dydy.gcp.seraf.dev” and I use the external IP “&lt;a href=&quot;https://35.188.19.184/&quot;&gt;35.188.19.184&lt;/a&gt;”, I will make some pictures on how it looks like on GCP:&lt;br&gt;
+&lt;img src=&quot;https://serafdev.github.io/content/images/2020/05/image-26.png&quot; alt=&quot;&quot;&gt;Compute Engine&lt;br&gt;
+And on Cloud DNS:&lt;br&gt;
+&lt;img src=&quot;https://serafdev.github.io/content/images/2020/05/image-27.png&quot; alt=&quot;&quot;&gt;Cloud DNS&lt;br&gt;
+It’s a good idea to create an NS record for your cloud environment to make small tests like this one as a developer or devops, else you can just do that inside your domain provider’s DNS config.&lt;/p&gt;
+&lt;p&gt;I hid the SOA and NS record because I don’t know if it’s sensitive, but basically it just tells my domain provider to put gcp.seraf.dev in the GCP Nameserver, so you can create anything.gcp.seraf.dev from within your console.&lt;/p&gt;
+&lt;p&gt;Okay back to our stuff, now that we setup the A record we can go back to the machine and run our docker-compose. Since we don’t care about this machine and permissions, you can run docker-compose up -d with elevated privileges:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;sudo docker-compose up -d&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Verify your deployment:&lt;br&gt;
+&lt;img src=&quot;https://serafdev.github.io/content/images/2020/05/image-28.png&quot; alt=&quot;&quot;&gt;Wow, so small. Just zoom&lt;br&gt;
+OHHH yeahhh! We’ve done it! Now visit your url and look at the certificate, so simple right?&lt;br&gt;
+&lt;img src=&quot;https://serafdev.github.io/content/images/2020/05/image-29.png&quot; alt=&quot;&quot;&gt;Easy to deploy certificate? Check.&lt;br&gt;
+All right, hope this helped someone!&lt;/p&gt;
+&lt;p&gt;For more information go ahead to their website, I am not affiliated with them (wish I was though) &lt;a href=&quot;https://caddyserver.com/&quot;&gt;https://caddyserver.com/&lt;/a&gt;&lt;/p&gt;
+
+			
+		</content>
+	</entry>
+	
+	<entry>
+		<title>A Guide to integrate Utterances with Ghost Blog.</title>
+		<link href="https://serafdev.github.io/posts/2020-05-30-a-guide-to-integrate-utterances-with-ghost-blog/"/>
+		<updated>2020-05-30T00:00:00-04:00</updated>
+		<id>https://serafdev.github.io/posts/2020-05-30-a-guide-to-integrate-utterances-with-ghost-blog/</id>
+		<content type="html">
+		  &lt;h3 id=&quot;utterances-integration&quot;&gt;Utterances Integration &lt;a class=&quot;direct-link&quot; href=&quot;#utterances-integration&quot;&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;So I came across a pretty cool open source project that let’s you use github issues to integrate commenting to your blogposts.&lt;/p&gt;
+&lt;p&gt;Adding to this other pretty cool open source blog project named ghost, the combination to me is the best since I don&#39;t like reinventing the wheel.&lt;/p&gt;
+&lt;p&gt;For more information here is the link: &lt;a href=&quot;https://utteranc.es/&quot;&gt;https://utteranc.es/&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;For the blog: &lt;a href=&quot;https://ghost.org/&quot;&gt;https://ghost.org&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Basically, all you&#39;ll have to do is to copy the Utterance snippet and put it inside the &lt;code&gt;post.hbs&lt;/code&gt; file, then zip the modified theme and upload it to your blog.&lt;/p&gt;
+&lt;p&gt;The snippet that you need to copy:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;    &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;script &lt;span class=&quot;token assign-left variable&quot;&gt;src&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;https://utteranc.es/client.js&quot;&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token assign-left variable&quot;&gt;repo&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;user/repo&quot;&lt;/span&gt;&lt;br&gt;        issue-term&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;pathname&quot;&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token assign-left variable&quot;&gt;theme&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;github-dark&quot;&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token assign-left variable&quot;&gt;crossorigin&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;anonymous&quot;&lt;/span&gt;&lt;br&gt;        async&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;&lt;br&gt;    &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;/script&lt;span class=&quot;token operator&quot;&gt;&gt;&lt;/span&gt;&lt;br&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;For example, I use the Casper theme so I forked the official github repository of Casper and added that snippet there, then I Downloaded the repository as Zip and uploaded that to my Ghost blog.&lt;/p&gt;
+&lt;p&gt;Here&#39;s the permalink for the modified code:&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://github.com/serafdev/Casper/blob/777098a35b869060aefc664aceb8ad70b9290c27/post.hbs#L117&quot;&gt;https://github.com/serafdev/Casper/blob/777098a35b869060aefc664aceb8ad70b9290c27/post.hbs#L117&lt;/a&gt;&lt;/p&gt;
+
+			
+		</content>
+	</entry>
+	
+	<entry>
+		<title>Run an auto-reload Go web development server with Docker</title>
+		<link href="https://serafdev.github.io/posts/2020-05-30-go-livereload/"/>
+		<updated>2020-05-30T00:00:00-04:00</updated>
+		<id>https://serafdev.github.io/posts/2020-05-30-go-livereload/</id>
+		<content type="html">
+		  &lt;p&gt;In this short tutorial, I will show you how to run a development server during Go web development. This made me skip the need to go to my terminal and re-run “go run main.go” 73 times an hour (Spoil-alert: I didn’t wait until that number, I’m very lazy).&lt;/p&gt;
+&lt;p&gt;I suggest following along, else if you are already comfortable with Docker/Docker-Compose and Go web development, you can jump directly to the TL;DR at the end of the article.&lt;/p&gt;
+&lt;p&gt;First let’s write a small app that we will run locally.&lt;/p&gt;
+&lt;p&gt;Create a folder named godev, create a file named main.go in there and put the following content in it:&lt;/p&gt;
+&lt;pre class=&quot;language-go&quot;&gt;&lt;code class=&quot;language-go&quot;&gt;    &lt;span class=&quot;token keyword&quot;&gt;package&lt;/span&gt; main&lt;br&gt;    &lt;br&gt;    &lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token string&quot;&gt;&quot;fmt&quot;&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token string&quot;&gt;&quot;net/http&quot;&lt;/span&gt;&lt;br&gt;    &lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;br&gt;    &lt;br&gt;    &lt;span class=&quot;token keyword&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token comment&quot;&gt;// Bind anonymous function to root route &quot;/&quot;&lt;/span&gt;&lt;br&gt;        http&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;HandleFunc&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;/&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;w http&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;ResponseWriter&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; r &lt;span class=&quot;token operator&quot;&gt;*&lt;/span&gt;http&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;Request&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&lt;br&gt;            &lt;span class=&quot;token comment&quot;&gt;// Returns string &quot;Livemounted Version One&quot; to the http writer.&lt;/span&gt;&lt;br&gt;            fmt&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;Fprintf&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;w&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;Livemounted %s\n&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;Version One&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;br&gt;        fmt&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;Println&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;Serving Go app on port 8081&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token comment&quot;&gt;// Serves on port 8081&lt;/span&gt;&lt;br&gt;        http&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;ListenAndServe&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;:8081&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token boolean&quot;&gt;nil&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;br&gt;    &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;main.go&lt;br&gt;
+Simply put, we run an http server with one route “/” returning string “Livemounted Version One”.&lt;/p&gt;
+&lt;p&gt;Now create your go module, go in the folder and run in a terminal (replace the url with a unique link of your choice):&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;go mod init github.com/yourusername/godev&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We can test this by running in the terminal:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;go run main.go&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now visit the http server at localhost:8081, you will see “Livemounted Version One”&lt;/p&gt;
+&lt;p&gt;Let’s change the “One” to a “Two” on line 10. Let’s kill the go service and run again the go run main.go. We now serve “Livemounted Version Two”, as you can see, this workflow is not efficient, especially when you get up to speed with the language and have to modify and test multiple things per minute, just the process of going to the terminal and re-running your application can get heavy on your workflow and is not efficient.&lt;/p&gt;
+&lt;p&gt;A good way to automate something like this is inotify, it will watch all the files (using a regex, in our case .go$) and when it detects changes it will run a command, what we want exactly is: “When a .go file changes in my directory, execute go run main.go”&lt;/p&gt;
+&lt;p&gt;There is other tools like inotify and luckily it is easy to write your own script that does that. Since we are already in a Go environment, I picked &lt;a href=&quot;http://github.com/cespare/reflex&quot;&gt;github.com/cespare/reflex&lt;/a&gt;, it is written in Go (that way I won’t be bothered with downloadomg other Linux tools).&lt;/p&gt;
+&lt;p&gt;Put this content in a &lt;a href=&quot;http://docker-entrypoint.sh/&quot;&gt;docker-entrypoint.sh&lt;/a&gt; file:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token builtin class-name&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;Running docker-entrypoint.sh&quot;&lt;/span&gt;&lt;br&gt;reflex -r &lt;span class=&quot;token string&quot;&gt;&#39;\.go$&#39;&lt;/span&gt; -s -- &lt;span class=&quot;token function&quot;&gt;sh&lt;/span&gt; -c &lt;span class=&quot;token string&quot;&gt;&#39;echo &quot;Running development server&quot; &amp;amp;&amp;amp; go mod tidy &amp;amp;&amp;amp; go run main.go&#39;&lt;/span&gt;&lt;br&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;a href=&quot;http://docker-entrypoint.sh/&quot;&gt;docker-entrypoint.sh&lt;/a&gt;&lt;br&gt;
+Basically we run the reflex command using regex .go$ and execute as a shell script go mod tidy and go run main.go, these will make sure that if you imported new libraries, it will update the go modules inside your container&lt;/p&gt;
+&lt;p&gt;And this in a file named Dockerfile:&lt;/p&gt;
+&lt;pre class=&quot;language-dockerfile&quot;&gt;&lt;code class=&quot;language-dockerfile&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;FROM&lt;/span&gt; golang&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;1.14.3&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;buster&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token keyword&quot;&gt;WORKDIR&lt;/span&gt; /app&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token keyword&quot;&gt;RUN&lt;/span&gt; go get github.com/cespare/reflex &lt;br&gt;&lt;br&gt;&lt;span class=&quot;token keyword&quot;&gt;COPY&lt;/span&gt; docker&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;entrypoint.sh /docker&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;entrypoint.sh&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token keyword&quot;&gt;RUN&lt;/span&gt; sed &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;i &lt;span class=&quot;token string&quot;&gt;&#39;s/\r//&#39;&lt;/span&gt; /docker&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;entrypoint.sh&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token keyword&quot;&gt;VOLUME&lt;/span&gt; godev&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token keyword&quot;&gt;ENTRYPOINT&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;sh&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;/docker-entrypoint.sh&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Dockerfile&lt;br&gt;
+Here all we do is download reflex and copy the docker-entrypoint. The RUN sed line only makes sure that it removes that \r EOL character that I inserted when using Windows. I don’t need that line when I write my docker-entrypoint using Linux or Mac, but better safe than sorry.&lt;/p&gt;
+&lt;p&gt;The VOLUME directive tells the Docker-image that it’s expecting the user to mount a volume named godev and as an ENTRYPOINT, we just run the content of the docker-entrypoint above.&lt;/p&gt;
+&lt;p&gt;The reason we using a docker-entrypoint is because the reflex command shouldn’t run at build time, which the CMD directive does, an ENTRYPOINT directive only runs after all volumes are mounted, this makes it safe running go mod tidy and having an environment that is live-proof (aka no mounting overrides, etc)&lt;/p&gt;
+&lt;p&gt;Okay, now let’s run all of this, let’s create a docker-compose file to make it easier to build and run, create a docker-compose.yml file and put this content in it:&lt;/p&gt;
+&lt;pre class=&quot;language-yaml&quot;&gt;&lt;code class=&quot;language-yaml&quot;&gt;    &lt;span class=&quot;token key atrule&quot;&gt;version&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&#39;3&#39;&lt;/span&gt;&lt;br&gt;    &lt;br&gt;    &lt;span class=&quot;token key atrule&quot;&gt;volumes&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;      &lt;span class=&quot;token key atrule&quot;&gt;godev&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;&lt;br&gt;    &lt;span class=&quot;token key atrule&quot;&gt;services&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;      &lt;span class=&quot;token key atrule&quot;&gt;godev&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token key atrule&quot;&gt;build&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;          &lt;span class=&quot;token key atrule&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; .&lt;br&gt;        &lt;span class=&quot;token key atrule&quot;&gt;ports&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;          &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; 8081&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;8081&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token key atrule&quot;&gt;volumes&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;br&gt;          &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; ./&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;/app&lt;br&gt;          &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; godev&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;/go&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;docker-compose.yml&lt;br&gt;
+This config will mount your current directory into /app and will create a godev volume and mount it to /go ($GOPATH). This will serve as cache for your libraries during your development.&lt;/p&gt;
+&lt;p&gt;Let’s run that:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;docker-compose up&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now you should see this as output:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;godev_1 &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; Running docker-entrypoint.sh&lt;br&gt;godev_1 &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;00&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; Starting &lt;span class=&quot;token function&quot;&gt;service&lt;/span&gt;&lt;br&gt;godev_1 &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;00&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; Running development server&lt;br&gt;godev_1 &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;00&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; Serving Go app on port &lt;span class=&quot;token number&quot;&gt;8081&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If you go to 8081, you should see “Livemount Version Two” (as we changed it at some step). Now let’s go to our code and bump the Version, in this case “Version Three”. Save your file and your output should look like this:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;godev_1 &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; Running docker-entrypoint.sh&lt;br&gt;godev_1 &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;00&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; Starting &lt;span class=&quot;token function&quot;&gt;service&lt;/span&gt;&lt;br&gt;godev_1 &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;00&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; Running development server&lt;br&gt;godev_1 &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;00&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; Serving Go app on port &lt;span class=&quot;token number&quot;&gt;8081&lt;/span&gt;&lt;br&gt;godev_1 &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;00&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; Killing &lt;span class=&quot;token function&quot;&gt;service&lt;/span&gt;&lt;br&gt;godev_1 &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;00&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; ^Csignal: interrupt&lt;br&gt;godev_1 &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;00&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; Starting &lt;span class=&quot;token function&quot;&gt;service&lt;/span&gt;&lt;br&gt;godev_1 &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;00&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; Running development server&lt;br&gt;godev_1 &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;00&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; Serving Go app on port &lt;span class=&quot;token number&quot;&gt;8081&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;NOICE, automatic rebuilds and at 8081 we can find our updated code.&lt;/p&gt;
+&lt;p&gt;Welp, that’s it! This also helps a lot when you have an environment using multiple databases and don’t want to be bothered with port mappings etc, you’re already in your docker network. All right, thanks for reading!&lt;/p&gt;
+&lt;h1 id=&quot;tl%3Bdr&quot;&gt;TL;DR &lt;a class=&quot;direct-link&quot; href=&quot;#tl%3Bdr&quot;&gt;#&lt;/a&gt;&lt;/h1&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token function&quot;&gt;git&lt;/span&gt; clone &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;https://github.com/serafdev/godev.git&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;https://github.com/serafdev/godev.git&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token builtin class-name&quot;&gt;cd&lt;/span&gt; godev &lt;span class=&quot;token operator&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; docker-compose up&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Visit localhost:8081, you will see “Livemount Version One” on the page&lt;/p&gt;
+&lt;p&gt;Now open main.go and bump the Version in the “/” route, you will see the docker-compose logs look like this:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;godev_1 &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; Running docker-entrypoint.sh&lt;br&gt;godev_1 &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;00&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; Starting &lt;span class=&quot;token function&quot;&gt;service&lt;/span&gt;&lt;br&gt;godev_1 &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;00&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; Running development server&lt;br&gt;godev_1 &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;00&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; Serving Go app on port &lt;span class=&quot;token number&quot;&gt;8081&lt;/span&gt;&lt;br&gt;godev_1 &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;00&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; Killing &lt;span class=&quot;token function&quot;&gt;service&lt;/span&gt;&lt;br&gt;godev_1 &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;00&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; ^Csignal: interrupt&lt;br&gt;godev_1 &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;00&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; Starting &lt;span class=&quot;token function&quot;&gt;service&lt;/span&gt;&lt;br&gt;godev_1 &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;00&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; Running development server&lt;br&gt;godev_1 &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;00&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; Serving Go app on port &lt;span class=&quot;token number&quot;&gt;8081&lt;/span&gt;&lt;br&gt;&lt;br&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now refresh your browser, you should see “Livemount Version Two”&lt;/p&gt;
+&lt;p&gt;Okay thanx for reading!&lt;/p&gt;
+
+			
+		</content>
+	</entry>
+</feed>

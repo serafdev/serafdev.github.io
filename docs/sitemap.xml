@@ -1,0 +1,540 @@
+<?xml version="1.0" encoding="utf-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  <url>
+    <loc>https://serafdev.github.io/posts/2019-02-17-Django-filtering-with-query-parameters/</loc>
+    <lastmod>2020-10-26T00:53:01.000Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  <url>
+    <loc>https://serafdev.github.io/posts/2019-03-09-Things-I-wish-I-could-add-to-python/</loc>
+    <lastmod>2020-10-26T00:53:01.000Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  <url>
+    <loc>https://serafdev.github.io/posts/2019-03-11-Deploy-an-nginx-server/</loc>
+    <lastmod>2020-10-26T00:53:01.000Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  <url>
+    <loc>https://serafdev.github.io/posts/2019-05-01-Generate-a-csr-key-pair-with-openssl/</loc>
+    <lastmod>2020-10-26T00:53:01.000Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  <url>
+    <loc>https://serafdev.github.io/posts/2019-10-05-Gunicorn-WSGI-Dockerfile/</loc>
+    <lastmod>2020-10-26T00:53:01.000Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  <url>
+    <loc>https://serafdev.github.io/posts/2019-10-13-Kubernetes-configuration-with-backend-and-frontend/</loc>
+    <lastmod>2020-10-26T00:53:01.000Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  <url>
+    <loc>https://serafdev.github.io/posts/2020-02-20-a-guide-to-running-a-node-js-live-server-in-docker-react-js-example/</loc>
+    <lastmod>2020-10-26T00:53:01.000Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  <url>
+    <loc>https://serafdev.github.io/posts/2020-03-28-how-magit-improved-my-workflow/</loc>
+    <lastmod>2020-10-26T00:53:01.000Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  <url>
+    <loc>https://serafdev.github.io/posts/2020-03-30-learn-devops-by-deploying-a-minecraft-server/</loc>
+    <lastmod>2020-10-26T00:53:01.000Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  <url>
+    <loc>https://serafdev.github.io/posts/2020-05-19-how-to-use-caddy-as-a-reverse-proxy-with-auto-tls/</loc>
+    <lastmod>2020-10-26T00:53:01.000Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  <url>
+    <loc>https://serafdev.github.io/posts/2020-05-30-a-guide-to-integrate-utterances-with-ghost-blog/</loc>
+    <lastmod>2020-10-26T00:53:01.000Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+  
+    
+  
+  <url>
+    <loc>https://serafdev.github.io/posts/2020-05-30-go-livereload/</loc>
+    <lastmod>2020-10-26T00:53:01.000Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+    
+  
+  <url>
+    <loc>https://serafdev.github.io/about/</loc>
+    <lastmod>2020-10-26T00:53:01.000Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/posts/</loc>
+    <lastmod>2020-10-16T01:17:47.723Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/page-list/</loc>
+    <lastmod>2020-10-16T01:17:47.771Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/</loc>
+    <lastmod>2020-10-16T01:17:47.775Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/security/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/webserver/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/another-tag/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/openssl/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/minecraft/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/docker/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/reactjs/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/nodejs/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/blog/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/utterances/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/go/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/devops/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/nginx/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/caddy/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/let&amp;amp;#39;s-encrypt/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/gcp/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/dns/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/tools/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/git/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/magit/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/emacs/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/cicd/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/linux/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/tls/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+    
+  
+  <url>
+    <loc>https://serafdev.github.io/</loc>
+    <lastmod>2020-10-26T00:53:01.000Z</lastmod>
+  </url>
+</urlset>
