@@ -324,45 +324,6 @@
   
   
   <url>
-    <loc>https://serafdev.github.io/tags/blog/</loc>
-    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
-  </url>
-  
-  
-  
-  
-  
-  
-    
-  
-  
-  <url>
-    <loc>https://serafdev.github.io/tags/utterances/</loc>
-    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
-  </url>
-  
-  
-  
-  
-  
-  
-    
-  
-  
-  <url>
-    <loc>https://serafdev.github.io/tags/go/</loc>
-    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
-  </url>
-  
-  
-  
-  
-  
-  
-    
-  
-  
-  <url>
     <loc>https://serafdev.github.io/tags/devops/</loc>
     <lastmod>2020-10-26T00:10:10.210Z</lastmod>
   </url>
@@ -376,7 +337,7 @@
   
   
   <url>
-    <loc>https://serafdev.github.io/tags/nginx/</loc>
+    <loc>https://serafdev.github.io/tags/tls/</loc>
     <lastmod>2020-10-26T00:10:10.210Z</lastmod>
   </url>
   
@@ -415,7 +376,7 @@
   
   
   <url>
-    <loc>https://serafdev.github.io/tags/gcp/</loc>
+    <loc>https://serafdev.github.io/tags/nginx/</loc>
     <lastmod>2020-10-26T00:10:10.210Z</lastmod>
   </url>
   
@@ -429,6 +390,45 @@
   
   <url>
     <loc>https://serafdev.github.io/tags/dns/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/go/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/blog/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/utterances/</loc>
     <lastmod>2020-10-26T00:10:10.210Z</lastmod>
   </url>
   
@@ -519,7 +519,7 @@
   
   
   <url>
-    <loc>https://serafdev.github.io/tags/tls/</loc>
+    <loc>https://serafdev.github.io/tags/gcp/</loc>
     <lastmod>2020-10-26T00:10:10.210Z</lastmod>
   </url>
   
