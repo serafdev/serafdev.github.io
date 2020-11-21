@@ -255,49 +255,16 @@ here I&#39;ll be chosing 8000 for simplicity, so in daemon mode (-d):&lt;/p&gt;
 &lt;p&gt;npx create-react-app react-app &amp;amp;&amp;amp; cd react-app&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;Put a file on the root of the project named &lt;a href=&quot;http://docker-entrypoint.sh/&quot;&gt;docker-entrypoint.sh&lt;/a&gt; with content:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;#!/bin/sh
-
-case $1 in
-    dev)
-        yarn
-        echo &amp;quot;Running development server on 0.0.0.0:3000..&amp;quot;
-        yarn start
-        ;;
-    test)
-        echo &amp;quot;Running tests..&amp;quot;
-        yarn test
-        ;;
-    sh)
-        /bin/sh
-        ;;
-esac
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;a href=&quot;http://docker-entrypoint.sh/&quot;&gt;docker-entrypoint.sh&lt;/a&gt;&lt;br&gt;
-Another file named Dockerfile with this content:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;FROM node:lts-alpine
-ENV HOST 0.0.0.0
-
-WORKDIR /app
-
-COPY package.json /app
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-
-RUN chmod +x /docker-entrypoint.sh
-ENTRYPOINT [&amp;quot;docker-entrypoint.sh&amp;quot;, &amp;quot;dev&amp;quot;]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&quot;dockerfile&quot;&gt;Dockerfile &lt;a class=&quot;direct-link&quot; href=&quot;#dockerfile&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;&lt;strong&gt;Build and run!&lt;/strong&gt;&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;&lt;span class=&quot;token shebang important&quot;&gt;#!/bin/sh&lt;/span&gt;&lt;br&gt;&lt;br&gt;&lt;span class=&quot;token keyword&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;token variable&quot;&gt;$1&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;in&lt;/span&gt;&lt;br&gt;    dev&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token function&quot;&gt;yarn&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token builtin class-name&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;Running development server on 0.0.0.0:3000..&quot;&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token function&quot;&gt;yarn&lt;/span&gt; start&lt;br&gt;        &lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;br&gt;    &lt;span class=&quot;token builtin class-name&quot;&gt;test&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token builtin class-name&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;Running tests..&quot;&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token function&quot;&gt;yarn&lt;/span&gt; &lt;span class=&quot;token builtin class-name&quot;&gt;test&lt;/span&gt;&lt;br&gt;        &lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;br&gt;    &lt;span class=&quot;token function&quot;&gt;sh&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;br&gt;        /bin/sh&lt;br&gt;        &lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;token keyword&quot;&gt;esac&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Another file named Dockerfile with this content:&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;FROM node:lts-alpine&lt;br&gt;ENV HOST &lt;span class=&quot;token number&quot;&gt;0.0&lt;/span&gt;.0.0&lt;br&gt;&lt;br&gt;WORKDIR /app&lt;br&gt;&lt;br&gt;COPY package.json /app&lt;br&gt;COPY docker-entrypoint.sh /docker-entrypoint.sh&lt;br&gt;&lt;br&gt;RUN &lt;span class=&quot;token function&quot;&gt;chmod&lt;/span&gt; +x /docker-entrypoint.sh&lt;br&gt;ENTRYPOINT &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;docker-entrypoint.sh&quot;&lt;/span&gt;, &lt;span class=&quot;token string&quot;&gt;&quot;dev&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;h4 id=&quot;build-and-run!&quot;&gt;Build and run! &lt;a class=&quot;direct-link&quot; href=&quot;#build-and-run!&quot;&gt;#&lt;/a&gt;&lt;/h4&gt;
 &lt;p&gt;You’re ready to test! Run your docker command to build the image:&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;docker build . -t react-app:local&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;docker build &lt;span class=&quot;token builtin class-name&quot;&gt;.&lt;/span&gt; -t react-app:local&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Now you can run it by mounting your code to the machine and exposing the node port to your host:&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;docker run -v $(pwd):/app -p 3000:3000 react-app:local&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;h2 id=&quot;visit-the-url-on-your-browser%3A-localhost%3A3000%2C-you-should-see-this%3Areact-default-page&quot;&gt;Visit the url on your browser: localhost:3000, you should see this:&lt;br&gt;
-&lt;img src=&quot;https://serafdev.github.io/content/images/2020/05/image-5.png&quot; alt=&quot;&quot;&gt;React Default page &lt;a class=&quot;direct-link&quot; href=&quot;#visit-the-url-on-your-browser%3A-localhost%3A3000%2C-you-should-see-this%3Areact-default-page&quot;&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;&lt;strong&gt;Test Reloading&lt;/strong&gt;&lt;/p&gt;
+&lt;pre class=&quot;language-bash&quot;&gt;&lt;code class=&quot;language-bash&quot;&gt;docker run -v &lt;span class=&quot;token variable&quot;&gt;&lt;span class=&quot;token variable&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;token builtin class-name&quot;&gt;pwd&lt;/span&gt;&lt;span class=&quot;token variable&quot;&gt;)&lt;/span&gt;&lt;/span&gt;:/app -p &lt;span class=&quot;token number&quot;&gt;3000&lt;/span&gt;:3000 react-app:local&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Visit the url on your browser: localhost:3000, you should be able to see the React default page&lt;/p&gt;
+&lt;h4 id=&quot;test-reloading&quot;&gt;Test Reloading &lt;a class=&quot;direct-link&quot; href=&quot;#test-reloading&quot;&gt;#&lt;/a&gt;&lt;/h4&gt;
 &lt;p&gt;Now let’s modify some code and reload the page, open src/App.js with your favourite editor and modify the content of the &lt;/p&gt;&lt;p&gt;&lt;/p&gt; dom to: Noice (or anything, really). Now if you reload you should have:&lt;br&gt;
 &lt;img src=&quot;https://serafdev.github.io/content/images/2020/05/image-1.png&quot; alt=&quot;&quot;&gt;Just noice.&lt;br&gt;
 A more detailed article will be coming soon. If you have issues or find difficulties, do not hesitate leaving a comment.&lt;p&gt;&lt;/p&gt;

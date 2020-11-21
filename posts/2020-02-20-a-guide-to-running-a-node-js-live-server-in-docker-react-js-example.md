@@ -22,56 +22,56 @@ Create a new React project if you don’t already have one:
 > npx create-react-app react-app && cd react-app
 
 Put a file on the root of the project named docker-entrypoint.sh with content:
+```bash
+#!/bin/sh
 
-    #!/bin/sh
-    
-    case $1 in
-        dev)
-            yarn
-            echo "Running development server on 0.0.0.0:3000.."
-            yarn start
-            ;;
-        test)
-            echo "Running tests.."
-            yarn test
-            ;;
-        sh)
-            /bin/sh
-            ;;
-    esac
+case $1 in
+    dev)
+        yarn
+        echo "Running development server on 0.0.0.0:3000.."
+        yarn start
+        ;;
+    test)
+        echo "Running tests.."
+        yarn test
+        ;;
+    sh)
+        /bin/sh
+        ;;
+esac
+```
 
-docker-entrypoint.sh
 Another file named Dockerfile with this content:
 
-    FROM node:lts-alpine
-    ENV HOST 0.0.0.0
-    
-    WORKDIR /app
-    
-    COPY package.json /app
-    COPY docker-entrypoint.sh /docker-entrypoint.sh
-    
-    RUN chmod +x /docker-entrypoint.sh
-    ENTRYPOINT ["docker-entrypoint.sh", "dev"]
+```bash
+FROM node:lts-alpine
+ENV HOST 0.0.0.0
 
-Dockerfile
----
+WORKDIR /app
 
-**Build and run!**
+COPY package.json /app
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+
+RUN chmod +x /docker-entrypoint.sh
+ENTRYPOINT ["docker-entrypoint.sh", "dev"]
+```
+
+#### Build and run!
 
 You’re ready to test! Run your docker command to build the image:
 
-> docker build . -t react-app:local
-
+```bash
+docker build . -t react-app:local
+```
 Now you can run it by mounting your code to the machine and exposing the node port to your host:
 
-> docker run -v $(pwd):/app -p 3000:3000 react-app:local
+```bash
+docker run -v $(pwd):/app -p 3000:3000 react-app:local
+```
 
-Visit the url on your browser: localhost:3000, you should see this:
-![](/content/images/2020/05/image-5.png)React Default page
----
+Visit the url on your browser: localhost:3000, you should be able to see the React default page
 
-**Test Reloading**
+#### Test Reloading
 
 Now let’s modify some code and reload the page, open src/App.js with your favourite editor and modify the content of the <p></p> dom to: Noice (or anything, really). Now if you reload you should have:
 ![](/content/images/2020/05/image-1.png)Just noice.

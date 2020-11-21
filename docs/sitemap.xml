@@ -220,7 +220,7 @@
   
   
   <url>
-    <loc>https://serafdev.github.io/tags/security/</loc>
+    <loc>https://serafdev.github.io/tags/reactjs/</loc>
     <lastmod>2020-10-26T00:10:10.210Z</lastmod>
   </url>
   
@@ -259,7 +259,7 @@
   
   
   <url>
-    <loc>https://serafdev.github.io/tags/openssl/</loc>
+    <loc>https://serafdev.github.io/tags/docker/</loc>
     <lastmod>2020-10-26T00:10:10.210Z</lastmod>
   </url>
   
@@ -285,32 +285,6 @@
   
   
   <url>
-    <loc>https://serafdev.github.io/tags/docker/</loc>
-    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
-  </url>
-  
-  
-  
-  
-  
-  
-    
-  
-  
-  <url>
-    <loc>https://serafdev.github.io/tags/reactjs/</loc>
-    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
-  </url>
-  
-  
-  
-  
-  
-  
-    
-  
-  
-  <url>
     <loc>https://serafdev.github.io/tags/nodejs/</loc>
     <lastmod>2020-10-26T00:10:10.210Z</lastmod>
   </url>
@@ -324,7 +298,7 @@
   
   
   <url>
-    <loc>https://serafdev.github.io/tags/blog/</loc>
+    <loc>https://serafdev.github.io/tags/openssl/</loc>
     <lastmod>2020-10-26T00:10:10.210Z</lastmod>
   </url>
   
@@ -337,7 +311,7 @@
   
   
   <url>
-    <loc>https://serafdev.github.io/tags/utterances/</loc>
+    <loc>https://serafdev.github.io/tags/security/</loc>
     <lastmod>2020-10-26T00:10:10.210Z</lastmod>
   </url>
   
@@ -376,7 +350,7 @@
   
   
   <url>
-    <loc>https://serafdev.github.io/tags/another-tag/</loc>
+    <loc>https://serafdev.github.io/tags/caddy/</loc>
     <lastmod>2020-10-26T00:10:10.210Z</lastmod>
   </url>
   
@@ -402,7 +376,7 @@
   
   
   <url>
-    <loc>https://serafdev.github.io/tags/gcp/</loc>
+    <loc>https://serafdev.github.io/tags/another-tag/</loc>
     <lastmod>2020-10-26T00:10:10.210Z</lastmod>
   </url>
   
@@ -416,6 +390,32 @@
   
   <url>
     <loc>https://serafdev.github.io/tags/dns/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/blog/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/utterances/</loc>
     <lastmod>2020-10-26T00:10:10.210Z</lastmod>
   </url>
   
@@ -519,7 +519,7 @@
   
   
   <url>
-    <loc>https://serafdev.github.io/tags/caddy/</loc>
+    <loc>https://serafdev.github.io/tags/gcp/</loc>
     <lastmod>2020-10-26T00:10:10.210Z</lastmod>
   </url>
   
