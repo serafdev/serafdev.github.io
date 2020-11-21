@@ -89,7 +89,7 @@
   
   <url>
     <loc>https://serafdev.github.io/posts/2020-02-20-a-guide-to-running-a-node-js-live-server-in-docker-react-js-example/</loc>
-    <lastmod>2020-10-26T00:53:01.000Z</lastmod>
+    <lastmod>2020-11-21T12:52:24.000Z</lastmod>
   </url>
   
   
@@ -220,7 +220,7 @@
   
   
   <url>
-    <loc>https://serafdev.github.io/tags/reactjs/</loc>
+    <loc>https://serafdev.github.io/tags/gcp/</loc>
     <lastmod>2020-10-26T00:10:10.210Z</lastmod>
   </url>
   
@@ -259,45 +259,6 @@
   
   
   <url>
-    <loc>https://serafdev.github.io/tags/docker/</loc>
-    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
-  </url>
-  
-  
-  
-  
-  
-  
-    
-  
-  
-  <url>
-    <loc>https://serafdev.github.io/tags/minecraft/</loc>
-    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
-  </url>
-  
-  
-  
-  
-  
-  
-    
-  
-  
-  <url>
-    <loc>https://serafdev.github.io/tags/nodejs/</loc>
-    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
-  </url>
-  
-  
-  
-  
-  
-  
-    
-  
-  
-  <url>
     <loc>https://serafdev.github.io/tags/openssl/</loc>
     <lastmod>2020-10-26T00:10:10.210Z</lastmod>
   </url>
@@ -312,6 +273,45 @@
   
   <url>
     <loc>https://serafdev.github.io/tags/security/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/docker/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/reactjs/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
+    <loc>https://serafdev.github.io/tags/nodejs/</loc>
     <lastmod>2020-10-26T00:10:10.210Z</lastmod>
   </url>
   
@@ -402,6 +402,19 @@
   
   
   <url>
+    <loc>https://serafdev.github.io/tags/go/</loc>
+    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
+  </url>
+  
+  
+  
+  
+  
+  
+    
+  
+  
+  <url>
     <loc>https://serafdev.github.io/tags/blog/</loc>
     <lastmod>2020-10-26T00:10:10.210Z</lastmod>
   </url>
@@ -416,19 +429,6 @@
   
   <url>
     <loc>https://serafdev.github.io/tags/utterances/</loc>
-    <lastmod>2020-10-26T00:10:10.210Z</lastmod>
-  </url>
-  
-  
-  
-  
-  
-  
-    
-  
-  
-  <url>
-    <loc>https://serafdev.github.io/tags/go/</loc>
     <lastmod>2020-10-26T00:10:10.210Z</lastmod>
   </url>
   
@@ -519,7 +519,7 @@
   
   
   <url>
-    <loc>https://serafdev.github.io/tags/gcp/</loc>
+    <loc>https://serafdev.github.io/tags/minecraft/</loc>
     <lastmod>2020-10-26T00:10:10.210Z</lastmod>
   </url>
   

@@ -17,10 +17,13 @@ Caddy offers TLS encryption by default (https) and it uses Let’s Encrypt’s a
 
 Let’s pull the code needed for this tutorial:
 
-> git clone [https://github.com/serafdev/reverse-caddy.git](https://github.com/serafdev/reverse-caddy.git) && cd reverse-caddy
+```bash
+git clone [https://github.com/serafdev/reverse-caddy.git](https://github.com/serafdev/reverse-caddy.git) && cd reverse-caddy
+```
 
 The only file we need to inspect is the docker-compose.yml file, the others can be ignored, they are only used to build and run a small backend server to test our reverse-proxy situation. Let’s break it down.
 
+```bash
     version: '3'
     volumes:
       caddy_data:
@@ -38,6 +41,7 @@ The only file we need to inspect is the docker-compose.yml file, the others can 
       backend:
         build:
           context: .
+```
 
 We have here 2 services, caddy and backend. backend is the backend (woah) and caddy serves as a reverse proxy.
 
@@ -45,17 +49,24 @@ There is 2 volumes attached to caddy, there’s caddy_data and caddy_config, the
 
 We expose ports 80 and 443 to enable redirection and https and we run the caddy command for the reverse-proxy:
 
-> caddy reverse-proxy — from localhost — to backend:8081
+```bash
+caddy reverse-proxy — from localhost — to backend:8081
+```
 
 In a caddy config this looks like:
 
-> localhost
 
-> reverse-proxy backend:8081
+```bash
+localhost
 
-Let’s this build:
+reverse-proxy backend:8081
+```
 
-> docker-compose up -d
+Let’s build this:
+ 
+```bash
+docker-compose up -d
+```
 
 Now you can visit localhost, it will redirect you to [https://localhost](https://localhost,)
 ![](/content/images/2020/05/image-23.png)https, noice
@@ -67,45 +78,54 @@ Go to this link and follow the steps to install docker engine for Ubuntu: [https
 
 Now we’ll need docker-compose:
 
-> sudo apt install docker-compose
+```bash
+sudo apt install docker-compose
+```
 
 Double check your installations with docker -v and docker-compose -v, you should have something like this:
 
-    fares@instance-2:~$ docker-compose -v
-    docker-compose version 1.17.1, build unknown
-    fares@instance-2:~$ docker -v
-    Docker version 19.03.9, build 9d988398e7
+```bash
+fares@instance-2:~$ docker-compose -v
+docker-compose version 1.17.1, build unknown
+fares@instance-2:~$ docker -v
+Docker version 19.03.9, build 9d988398e7
+```
 
 Versions
 Okay now install git:
 
-> sudo apt install git
+```bash
+sudo apt install git
+```
 
 And clone the repository we used earlier with the caddy reverse-proxy docker-compose config:
 
-> git clone [https://github.com/serafdev/reverse-caddy.git](https://github.com/serafdev/reverse-caddy.git) && cd reverse-caddy
+```bash
+git clone [https://github.com/serafdev/reverse-caddy.git](https://github.com/serafdev/reverse-caddy.git) && cd reverse-caddy
+```
 
 Now we just need to do some modifications in the docker-compose.yml file, on the “command” directive in caddy change “localhost” with one of your own domains. I will pick something from my Cloud DNS Zone (gcp.seraf.dev), let’s go with dydy for caddy (??).
 
-    version: '3'
+```bash
+version: '3'
+volumes:
+  caddy_data:
+  caddy_config:
+services:
+  caddy:
+    image: caddy
     volumes:
-      caddy_data:
-      caddy_config:
-    services:
-      caddy:
-        image: caddy
-        volumes:
-          - caddy_data:/data
-          - caddy_config:/config
-        ports:
-          - 80:80
-          - 443:443
-        command: caddy reverse-proxy --from dydy.gcp.seraf.dev --to backend:8081 
-      backend:
-        build:
-          context: .
+      - caddy_data:/data
+      - caddy_config:/config
+    ports:
+      - 80:80
+      - 443:443
+    command: caddy reverse-proxy --from dydy.gcp.seraf.dev --to backend:8081 
+  backend:
+    build:
+      context: .
+```
 
-dydy.gcp.seraf.dev
 Now go to your DNS and add an A record for this new virtual machine, for me the domain name is “dydy.gcp.seraf.dev” and I use the external IP “[35.188.19.184](https://35.188.19.184/)”, I will make some pictures on how it looks like on GCP:
 ![](/content/images/2020/05/image-26.png)Compute Engine
 And on Cloud DNS:
@@ -116,7 +136,9 @@ I hid the SOA and NS record because I don’t know if it’s sensitive, but basi
 
 Okay back to our stuff, now that we setup the A record we can go back to the machine and run our docker-compose. Since we don’t care about this machine and permissions, you can run docker-compose up -d with elevated privileges:
 
-> sudo docker-compose up -d
+```bash
+sudo docker-compose up -d
+```
 
 Verify your deployment:
 ![](/content/images/2020/05/image-28.png)Wow, so small. Just zoom
